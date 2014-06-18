@@ -17,9 +17,14 @@ module AMQPManager
   end
 
   def self.start
-    @connection = Bunny.new(host: AhnConfig['rabbit_host'], user: AhnConfig['rabbit_user'], password: AhnConfig['rabbit_pass'])
+    @connection = Bunny.new(
+      host:     AhnConfig['rabbit_host'],
+      user:     AhnConfig['rabbit_user'],
+      password: AhnConfig['rabbit_pass']
+    )
     @connection.start
 
-    channel.queue('voice.ahn', auto_delete: false).bind(xchange, routing_key: 'voice.ahn')
+    channel.queue('voice.ahn', auto_delete: false)
+           .bind(xchange, routing_key: 'voice.ahn')
   end
 end
