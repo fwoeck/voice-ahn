@@ -1,9 +1,10 @@
 .*.swp
 .*.swo
 .DS_STORE
-log/*.log
-tmp
-.ruby-version
-.bundle/config
-vendor/bundle/*
-config/*.yml
+/log/*.log
+/tmp
+/.ruby-version
+/.bundle/config
+/vendor/bundle/*
+/config/*.yml
+/.rbx
