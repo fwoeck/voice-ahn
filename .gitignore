@@ -6,3 +6,4 @@ tmp
 vendor/ruby
 vendor/bundle
 .ruby-version
+.bundle/config
