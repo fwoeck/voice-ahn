@@ -3,7 +3,6 @@
 .DS_STORE
 log/*.log
 tmp
-vendor/ruby
-vendor/bundle
 .ruby-version
 .bundle/config
+vendor/bundle/*
