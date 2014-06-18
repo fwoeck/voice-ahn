@@ -1,38 +1,32 @@
 # encoding: utf-8
 
-Adhearsion.config do |config|
+RedisDb = ConnectionPool::Wrapper.new(size: 5, timeout: 3) {
+  Redis.new(host: AhnConfig['redis_host'], port: AhnConfig['redis_port'], db: AhnConfig['redis_db'])
+}
 
-  # Centralized way to specify any Adhearsion platform or plugin configuration
-  # - Execute rake config:show to view the active configuration values
-  #
-  # To update a plugin configuration you can write either:
-  #
-  #    * Option 1
-  #        Adhearsion.config.<plugin-name> do |config|
-  #          config.<key> = <value>
-  #        end
-  #
-  #    * Option 2
-  #        Adhearsion.config do |config|
-  #          config.<plugin-name>.<key> = <value>
-  #        end
+Adhearsion.config do |config|
 
   config.development do |dev|
     dev.platform.logging.level = :info
   end
 
-  config.adhearsion_activerecord.adapter     = (RUBY_PLATFORM =~ /java/ ? 'jdbcmysql' : 'mysql2')
-  config.adhearsion_activerecord.database    = 'asterisk'
-  config.adhearsion_activerecord.model_paths = []
-  config.adhearsion_activerecord.socket      = '/var/run/mysqld/mysqld.sock'
-# config.adhearsion_activerecord.host        =
-# config.adhearsion_activerecord.port        =
-  config.adhearsion_activerecord.username    = 'astrealtime'
-  config.adhearsion_activerecord.password    = '***REMOVED***'
-  config.adhearsion_activerecord.pool        = 100
+  config.production do |env|
+    env.platform.logging.level = :info
+  end
 
   config.punchblock.platform = :asterisk
-  config.punchblock.username = 'ahn_ami'
-  config.punchblock.password = '***REMOVED***'
-  config.punchblock.host     = '127.0.0.1'
+  config.punchblock.username = AhnConfig['ami_user']
+  config.punchblock.password = AhnConfig['ami_pass']
+  config.punchblock.host     = AhnConfig['ami_host']
+
+  config.adhearsion_activerecord.adapter     = (RUBY_PLATFORM =~ /java/ ? 'jdbcmysql' : 'mysql2')
+  config.adhearsion_activerecord.database    = AhnConfig['mysql_db']
+  config.adhearsion_activerecord.model_paths = []
+  config.adhearsion_activerecord.socket      = AhnConfig['mysql_sock']
+# config.adhearsion_activerecord.host        = AhnConfig['mysql_host']
+# config.adhearsion_activerecord.port        = AhnConfig['mysql_port']
+  config.adhearsion_activerecord.username    = AhnConfig['mysql_user']
+  config.adhearsion_activerecord.password    = AhnConfig['mysql_pass']
+  config.adhearsion_activerecord.pool        = 100
+
 end
