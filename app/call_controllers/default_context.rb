@@ -17,7 +17,7 @@ class DefaultContext < Adhearsion::CallController
     end
 
     play 'wimdu/en_thank_you_you_will'
-    operator = (input.utterance == '2' ? 'SIP/101' : 'SIP/102')
+    operator = (input.utterance == '2' ? 'SIP/102' : 'SIP/103')
     status   = dial operator, for: 15.seconds
 
     case status.result
