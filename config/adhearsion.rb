@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-RedisDb = ConnectionPool::Wrapper.new(size: 5, timeout: 3) {
-  Redis.new(host: AhnConfig['redis_host'], port: AhnConfig['redis_port'], db: AhnConfig['redis_db'])
-}
+# RedisDb = ConnectionPool::Wrapper.new(size: 5, timeout: 3) {
+#   Redis.new(host: AhnConfig['redis_host'], port: AhnConfig['redis_port'], db: AhnConfig['redis_db'])
+# }
 
 Adhearsion.config do |config|
 

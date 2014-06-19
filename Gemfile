@@ -1,12 +1,10 @@
 source 'http://rubygems.org'
 
 gem 'i18n'
-gem 'redis'
 gem 'bunny'
 gem 'ruby_ami'
 gem 'adhearsion'
 gem 'punchblock'
-gem 'thread_safe'
 gem 'adhearsion-asr'
 gem 'adhearsion-drb'
 gem 'connection_pool'
