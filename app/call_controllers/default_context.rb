@@ -3,16 +3,27 @@
 class DefaultContext < Adhearsion::CallController
 
   def run
-    log_call
     answer
-    play 'letters/a'
-    status = dial 'SIP/101', for: 8.seconds
+
+    input = ask 'wimdu/en_welcome_to_wimdu', timeout: 5, limit: 1
+    play 'wimdu/en_sorry_no_foreign_language' if input.utterance == '1'
+
+    play 'wimdu/en_how_can_we_help'
+
+    input = ask 'wimdu/en_press_two_for_booking', timeout: 5, limit: 1
+    while !['2', '3'].include?(input.utterance) do
+      play 'wimdu/en_sorry_i_didnt_understand'
+      input = ask 'wimdu/en_press_two_for_booking', timeout: 5, limit: 1
+    end
+
+    play 'wimdu/en_thank_you_you_will'
+    status = dial 'SIP/101', for: 15.seconds
 
     case status.result
     when :answer
-      play 'letters/b'
+      # ok
     else
-      play 'letters/x'
+      # failed/busy
     end
   end
 
