@@ -60,7 +60,7 @@ GEM
       nokogiri (~> 1.5, >= 1.5.6)
     builder (3.0.4)
     bundler-unload (1.0.2)
-    bunny (1.2.2)
+    bunny (1.3.0)
       amq-protocol (>= 1.9.2)
     celluloid (0.15.2)
       timers (~> 1.1.0)
@@ -131,7 +131,6 @@ GEM
       state_machine (~> 1.0)
       virtus (~> 1.0)
     rake (10.3.2)
-    redis (3.1.0)
     rspec (3.0.0)
       rspec-core (~> 3.0.0)
       rspec-expectations (~> 3.0.0)
@@ -396,10 +395,8 @@ DEPENDENCIES
   i18n
   mysql2
   punchblock
-  redis
   rspec
   ruby_ami
   rubygems-bundler
   rubysl
-  thread_safe
   wirble
