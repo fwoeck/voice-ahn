@@ -4,7 +4,6 @@ STDOUT.sync = true
 STDERR.sync = true
 
 require File.expand_path('../../config/environment',  __FILE__)
-require 'adhearsion'
 require 'adhearsion/cli_commands'
 
 require './lib/amqp_manager'

@@ -1,0 +1,2 @@
+class Ahn
+end
