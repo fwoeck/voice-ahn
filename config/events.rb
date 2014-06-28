@@ -26,15 +26,7 @@ Adhearsion::Events.draw do
     AMQPManager.publish(event)
   end
 
-  ami name: 'Newchannel' do |event|
-    AMQPManager.publish(event)
-  end
-
   ami name: 'Newstate' do |event|
-    AMQPManager.publish(event)
-  end
-
-  ami name: 'Newexten' do |event|
     AMQPManager.publish(event)
   end
 
