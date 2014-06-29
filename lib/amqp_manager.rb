@@ -1,18 +1,18 @@
 module AMQPManager
 
 
-  def self.ahn_channel
-    Thread.current[:ahn_channel] ||= @connection.create_channel
+  def self.numbers_channel
+    Thread.current[:numbers_channel] ||= @connection.create_channel
   end
 
 
-  def self.ahn_xchange
-    Thread.current[:ahn_xchange] ||= ahn_channel.topic('voice.ahn', auto_delete: false)
+  def self.numbers_xchange
+    Thread.current[:numbers_xchange] ||= numbers_channel.topic('voice.numbers', auto_delete: false)
   end
 
 
-  def self.publish_to_ahn(*args)
-    ahn_xchange.publish(*args)
+  def self.publish_to_numbers(*args)
+    numbers_xchange.publish(*args)
   end
 
 
@@ -33,7 +33,7 @@ module AMQPManager
 
   def self.publish(event)
     json_evt = event.to_json
-    publish_to_ahn(json_evt, routing_key: 'voice.ahn')
+    publish_to_numbers(json_evt, routing_key: 'voice.numbers')
     publish_to_push(json_evt)
   end
 
@@ -51,7 +51,7 @@ module AMQPManager
     )
     @connection.start
 
-    ahn_channel.queue('voice.ahn', auto_delete: false)
-               .bind(ahn_xchange, routing_key: 'voice.ahn')
+    numbers_channel.queue('voice.numbers', auto_delete: false)
+                   .bind(numbers_xchange, routing_key: 'voice.numbers')
   end
 end
