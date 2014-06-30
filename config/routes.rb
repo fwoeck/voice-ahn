@@ -3,5 +3,5 @@
 require 'call_controllers/default_context'
 
 Adhearsion.router do
-  route 'default', DefaultContext
+  route 'adhearsion', DefaultContext
 end
