@@ -50,7 +50,7 @@ module AMQPManager
 
       ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
       ahn_queue.subscribe { |delivery_info, metadata, payload|
-        # ...
+        puts "Received user update: #{payload}"
       }
     end
   end
