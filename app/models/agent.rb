@@ -1,11 +1,14 @@
-class Agent
+module Agents
 
   Registry = ThreadSafe::Cache.new
-  State    = Struct.new(:languages, :skills, :roles, :availability, :idle_since)
+
+  # TODO This could really be a User instance:
+  #
+  State = Struct.new(:languages, :skills, :roles, :availability, :idle_since)
 
   class << self
 
-    # Agent.where(availability: :idle, languages: :en).first
+    # Agents.where(availability: :idle, languages: :en).first
     #
     def where(hash)
       keys = hash.keys

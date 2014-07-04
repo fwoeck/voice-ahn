@@ -49,7 +49,7 @@ module AmqpManager
 
       ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
       ahn_queue.subscribe { |delivery_info, metadata, payload|
-        Agent.update_agent_state_with(payload)
+        Agents.update_agent_state_with(payload)
       }
     end
   end
