@@ -19,8 +19,8 @@ class Agent
 
     def parse_payload(payload)
       data  = JSON.parse(payload)
-      assert data.keys.include?('user_id')
-      assert data.keys.count == 2
+      assert data.keys.include?('user_id'), payload
+      assert data.keys.count == 2, payload
 
       uid   = data.delete('user_id').to_i
       key   = data.keys.first
@@ -29,8 +29,10 @@ class Agent
       [uid, key, value]
     end
 
-    def assert(value)
-      raise "An assertion failed!" unless !!value
+    def assert(value, payload)
+      unless !!value
+        Adhearsion.logger.error "Received invalid message: #{payload}"
+      end
     end
   end
 end
