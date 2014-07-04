@@ -1,6 +1,5 @@
-module AMQPManager
+module AmqpManager
   class << self
-
 
     def numbers_channel
       Thread.current[:numbers_channel] ||= @connection.create_channel

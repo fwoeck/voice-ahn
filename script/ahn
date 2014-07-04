@@ -8,6 +8,6 @@ require 'adhearsion/cli_commands'
 
 require './lib/redis_connection'
 require './lib/amqp_manager'
-AMQPManager.start
 
+AmqpManager.start
 Adhearsion::CLI::AhnCommand.start
