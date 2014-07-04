@@ -1,12 +1,50 @@
 class Agent
 
   Registry = ThreadSafe::Cache.new
-  State    = Struct.new(:languages, :skills, :roles, :availability)
-
-  # TODO
-  # Agent.where(availability: 'ready', languages: 'en').first => order FIFO/heuristic
+  State    = Struct.new(:languages, :skills, :roles, :availability, :idle_since)
 
   class << self
+
+    # Agent.where(availability: :idle, languages: :en).first
+    #
+    def where(hash)
+      keys = hash.keys
+      assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
+      sort_by_idle_time(filtered_agents keys, hash, fetch_all_agent_ids)
+    end
+
+
+    def sort_by_idle_time(agent_ids)
+      agent_ids.sort { |a1, a2|
+        Registry[a1].idle_since <=> Registry[a2].idle_since
+      }
+    end
+
+
+    def filtered_agents(keys, hash, agent_ids)
+      keys.each do |key|
+        agent_ids = agent_ids.select { |id|
+          current_key_matches?(hash, key, id)
+        }
+      end
+      agent_ids
+    end
+
+
+    def current_key_matches?(hash, key, id)
+      value   = Registry[id].send(key)
+      request = hash[key].to_s
+
+      value.is_a?(Array) ?
+        value.include?(request) :
+        value == request
+    end
+
+
+    def fetch_all_agent_ids
+      User.select(:id).all.map(&:id)
+    end
+
 
     def update_agent_state_with(payload)
       uid, key, value = get_key_value_pair(payload)
@@ -38,7 +76,7 @@ class Agent
 
 
     def assert(value, payload)
-      raise "Received invalid message: #{payload}" if !value
+      raise "Received invalid options: #{payload}" if !value
     end
   end
 end

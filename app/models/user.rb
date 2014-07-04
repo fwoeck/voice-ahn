@@ -18,7 +18,8 @@ class User < Sequel::Model
         u.languages.map(&:name),
         u.skills.map(&:name),
         u.roles.map(&:name),
-        u.availability
+        u.availability,
+        Time.now # TODO :idle_since
       )
     end
   end
