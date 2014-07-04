@@ -1,10 +1,7 @@
 module Agents
 
   Registry = ThreadSafe::Cache.new
-
-  # TODO This could really be a User instance:
-  #
-  State = Struct.new(:languages, :skills, :roles, :availability, :idle_since)
+  State    = Struct.new(:languages, :skills, :roles, :availability, :idle_since)
 
   class << self
 
