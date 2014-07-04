@@ -23,16 +23,16 @@ module Agents
 
     def filtered_agent_ids(keys, hash, agent_ids)
       keys.each do |key|
-        agent_ids = agent_ids.select { |id|
-          current_key_matches?(hash, key, id)
+        agent_ids = agent_ids.select { |uid|
+          current_key_matches?(hash, key, uid)
         }
       end
       agent_ids
     end
 
 
-    def current_key_matches?(hash, key, id)
-      value   = Registry[id].send(key)
+    def current_key_matches?(hash, key, uid)
+      value   = Registry[uid].send(key)
       request = hash[key].to_s
 
       value.is_a?(Array) ?
@@ -57,12 +57,16 @@ module Agents
     end
 
 
+    # FIXME This could be an instance method:
+    #
     def update_status_field(setter, value, uid)
       Registry[uid].send(setter, value)
       Adhearsion.logger.info "Update #{uid}'s state: #{setter}'#{value}'"
     end
 
 
+    # FIXME This could be an instance method:
+    #
     def update_idle_since(key, value, uid)
       if key == 'availability' && value == 'idle'
         Registry[uid].idle_since = Time.now.utc
@@ -72,7 +76,7 @@ module Agents
 
     def get_key_value_pair(payload)
       data  = parsed_json(payload)
-      uid   = data.delete('user_id').to_i
+      uid   = data.delete('user_id').to_i # FIXME This could return an Agent instance
       key   = data.keys.first
       value = data[key]
 
