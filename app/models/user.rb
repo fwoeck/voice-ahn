@@ -19,7 +19,7 @@ class User < Sequel::Model
         u.skills.map(&:name),
         u.roles.map(&:name),
         u.availability,
-        Time.now # TODO :idle_since
+        Time.now.utc
       )
     end
   end

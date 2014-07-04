@@ -51,8 +51,17 @@ module Agents
 
       if uid > 0 && key
         setter = "#{key}#{key[/y\z/] ? '' : 's'}="
+
+        update_idle_since(key, value, uid)
         Registry[uid].send(setter, value)
         Adhearsion.logger.info "Update #{uid}'s state: #{setter}'#{value}'"
+      end
+    end
+
+
+    def update_idle_since(key, value, uid)
+      if key == 'availability' && value == 'idle'
+        Registry[uid].idle_since = Time.now.utc
       end
     end
 
