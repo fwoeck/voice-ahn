@@ -35,9 +35,9 @@ module AMQPManager
 
     def establish_connection
       @connection = Bunny.new(
-        host:     AhnConfig['rabbit_host'],
-        user:     AhnConfig['rabbit_user'],
-        password: AhnConfig['rabbit_pass']
+        host:     WimConfig.rabbit_host,
+        user:     WimConfig.rabbit_user,
+        password: WimConfig.rabbit_pass
       ).tap { |c| c.start }
     rescue Bunny::TCPConnectionFailed
       sleep 1
