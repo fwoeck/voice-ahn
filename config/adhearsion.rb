@@ -17,7 +17,6 @@ Adhearsion.config do |config|
 
   plug = RUBY_PLATFORM =~ /java/ ? 'jdbc:mysql' : 'mysql2'
   db   = WimConfig.mysql_db
-  sock = WimConfig.mysql_sock
   host = WimConfig.mysql_host
   port = WimConfig.mysql_port
   user = WimConfig.mysql_user
