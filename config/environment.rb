@@ -8,8 +8,11 @@ require 'adhearsion'
 require 'active_support/all'
 
 
-AhnConfig = YAML.load_file('./config/app.yml')
 Time.zone = 'Etc/UTC'
+WimConfig = YAML.load_file('./config/app.yml')
+WimConfig.keys.each { |key|
+  WimConfig.instance_eval "class << self; define_method(:#{key}) {self['#{key}']}; end"
+}
 
 
 Bundler.require(:default, Adhearsion.environment)

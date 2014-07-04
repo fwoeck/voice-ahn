@@ -9,7 +9,6 @@ gem 'adhearsion',          github: 'adhearsion/adhearsion',          branch: 'de
 gem 'punchblock',          github: 'adhearsion/punchblock',          branch: 'develop'
 gem 'activesupport'
 gem 'adhearsion-asr',      github: 'adhearsion/adhearsion-asr',      branch: 'develop'
-gem 'adhearsion-drb',      github: 'adhearsion/adhearsion-drb',      branch: 'develop'
 gem 'connection_pool'
 gem 'adhearsion-asterisk', github: 'adhearsion/adhearsion-asterisk', branch: 'develop'
 

@@ -11,24 +11,17 @@ Adhearsion.config do |config|
   end
 
   config.punchblock.platform = :asterisk
-  config.punchblock.username = AhnConfig['ami_user']
-  config.punchblock.password = AhnConfig['ami_pass']
-  config.punchblock.host     = AhnConfig['ami_host']
+  config.punchblock.username = WimConfig.ami_user
+  config.punchblock.password = WimConfig.ami_pass
+  config.punchblock.host     = WimConfig.ami_host
 
   plug = RUBY_PLATFORM =~ /java/ ? 'jdbc:mysql' : 'mysql2'
-  db   = AhnConfig['mysql_db']
-  sock = AhnConfig['mysql_sock']
-  host = AhnConfig['mysql_host']
-  port = AhnConfig['mysql_port']
-  user = AhnConfig['mysql_user']
-  pass = AhnConfig['mysql_pass']
+  db   = WimConfig.mysql_db
+  host = WimConfig.mysql_host
+  port = WimConfig.mysql_port
+  user = WimConfig.mysql_user
+  pass = WimConfig.mysql_pass
 
   config.sequella.uri         = "#{plug}://#{host}:#{port}/#{db}?user=#{user}&password=#{pass}"
   config.sequella.model_paths = ['./app/models']
-
-  # config.adhearsion_drb.acl.allow     = [AhnConfig['drb_host']]
-  # config.adhearsion_drb.acl.deny      = []
-  # config.adhearsion_drb.host          = AhnConfig['drb_host']
-  # config.adhearsion_drb.port          = AhnConfig['drb_port']
-  # config.adhearsion_drb.shared_object = Ahn
 end
