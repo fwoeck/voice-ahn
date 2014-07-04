@@ -10,7 +10,7 @@ module Agents
     def where(hash)
       keys = hash.keys
       assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
-      sort_by_idle_time(filtered_agents keys, hash, fetch_all_agent_ids)
+      sort_by_idle_time filtered_agent_ids(keys, hash, fetch_all_agent_ids)
     end
 
 
@@ -21,7 +21,7 @@ module Agents
     end
 
 
-    def filtered_agents(keys, hash, agent_ids)
+    def filtered_agent_ids(keys, hash, agent_ids)
       keys.each do |key|
         agent_ids = agent_ids.select { |id|
           current_key_matches?(hash, key, id)
@@ -51,11 +51,15 @@ module Agents
 
       if uid > 0 && key
         setter = "#{key}#{key[/y\z/] ? '' : 's'}="
-
         update_idle_since(key, value, uid)
-        Registry[uid].send(setter, value)
-        Adhearsion.logger.info "Update #{uid}'s state: #{setter}'#{value}'"
+        update_status_field(setter, value, uid)
       end
+    end
+
+
+    def update_status_field(setter, value, uid)
+      Registry[uid].send(setter, value)
+      Adhearsion.logger.info "Update #{uid}'s state: #{setter}'#{value}'"
     end
 
 
