@@ -38,9 +38,7 @@ class Agent
 
 
     def assert(value, payload)
-      unless !!value
-        Adhearsion.logger.error "Received invalid message: #{payload}"
-      end
+      raise "Received invalid message: #{payload}" if !value
     end
   end
 end
