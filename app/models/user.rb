@@ -14,7 +14,7 @@ class User < Sequel::Model
 
   def self.fetch_all_agents
     all.each do |u|
-      Agents::Registry[u.id] = Agents::State.new(
+      Agent::Registry[u.id] = Agent::State.new(
         u.languages.map(&:name),
         u.skills.map(&:name),
         u.roles.map(&:name),
@@ -22,6 +22,11 @@ class User < Sequel::Model
         Time.now.utc
       )
     end
+  end
+
+
+  def self.all_ids
+    self.select(:id).all.map(&:id)
   end
 
 

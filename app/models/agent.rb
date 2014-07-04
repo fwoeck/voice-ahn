@@ -1,23 +1,16 @@
-module Agents
+class Agent
 
   Registry = ThreadSafe::Cache.new
   State    = Struct.new(:languages, :skills, :roles, :availability, :idle_since)
 
   class << self
 
-    # Agents.where(availability: :idle, languages: :en).first
+    # Agent.where(availability: :idle, languages: :en).sort_by_idle_time
     #
     def where(hash)
       keys = hash.keys
       assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
-      sort_by_idle_time filtered_agent_ids(keys, hash, fetch_all_agent_ids)
-    end
-
-
-    def sort_by_idle_time(agent_ids)
-      agent_ids.sort { |a1, a2|
-        Registry[a1].idle_since <=> Registry[a2].idle_since
-      }
+      filtered_agent_ids(keys, hash, User.all_ids)
     end
 
 
@@ -38,11 +31,6 @@ module Agents
       value.is_a?(Array) ?
         value.include?(request) :
         value == request
-    end
-
-
-    def fetch_all_agent_ids
-      User.select(:id).all.map(&:id)
     end
 
 
