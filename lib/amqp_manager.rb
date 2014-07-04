@@ -32,6 +32,9 @@ module AMQPManager
 
       numbers_channel.queue('voice.numbers', auto_delete: false)
                      .bind(numbers_xchange, routing_key: 'voice.numbers')
+    rescue Bunny::TCPConnectionFailed
+      sleep 1
+      retry
     end
   end
 end
