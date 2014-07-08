@@ -9,16 +9,16 @@ class Agent
   class << self
 
 
-    def setup_current_callstate_for(peer, status)
-      search = Agent::Registry.detect { |k, v| v.name == peer }
+    def find_agent_for(peer)
+      (Agent::Registry.detect { |k, v| v.name == peer } || [nil, nil])[1]
+    end
 
-      if search
-        agent = search[1]
-        if !(status == 'registered' && agent.callstate == 'talking')
-          agent.callstate = status
-          $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
-        end
-      end
+
+    def setup_current_callstate_for(agent, status)
+      return unless agent && status
+
+      agent.callstate = status
+      $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
     end
 
 
