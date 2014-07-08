@@ -18,7 +18,16 @@ Adhearsion::Events.draw do
     AmqpManager.numbers_publish(event)
 
     peer   = event.headers['Peer'][/SIP.(.+)$/,1]
-    status = event.headers['PeerStatus']
+    status = event.headers['PeerStatus'].downcase
+    search = Agent::Registry.detect { |k,v| v.name == peer }
+
+    # FIXME refactor this urgently:
+    #
+    if search
+      agent = search[1]
+      agent.callstate = status
+      $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
+    end
   end
 
   ami name: 'NewCallerid' do |event|

@@ -1,6 +1,6 @@
 class Agent
 
-  Registry = ThreadSafe::Cache.new
+  Registry = ThreadSafe::Hash.new
   State    = Struct.new(
                :id, :name, :languages, :skills, :roles,
                :availability, :callstate, :idle_since
