@@ -7,38 +7,50 @@ Adhearsion::Events.draw do
   # end
 
   ami name: 'Bridge' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 
   ami name: 'BridgeExec' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 
+  # FIXME refactor this urgently:
+  #
   ami name: 'PeerStatus' do |event|
-    AMQPManager.numbers_publish(event)
+    peer   = event.headers['Peer'][/SIP.(.+)$/,1]
+    status = event.headers['PeerStatus'].downcase
+    search = Agent::Registry.detect { |k,v| v.name == peer }
+
+    if search
+      agent = search[1]
+      agent.callstate = status
+      $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
+    end
+
+    AmqpManager.numbers_publish(event)
   end
 
   ami name: 'NewCallerid' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 
   ami name: 'OriginateResponse' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 
   ami name: 'Newstate' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 
   ami name: 'Newchannel' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 
   ami name: 'SoftHangupRequest' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 
   ami name: 'Hangup' do |event|
-    AMQPManager.numbers_publish(event)
+    AmqpManager.numbers_publish(event)
   end
 end

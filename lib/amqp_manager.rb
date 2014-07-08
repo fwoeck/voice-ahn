@@ -1,6 +1,7 @@
-module AMQPManager
-  class << self
+require './app/models/agent'
 
+module AmqpManager
+  class << self
 
     def numbers_channel
       Thread.current[:numbers_channel] ||= @connection.create_channel
@@ -50,7 +51,7 @@ module AMQPManager
 
       ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
       ahn_queue.subscribe { |delivery_info, metadata, payload|
-        # ...
+        Agent.update_agent_state_with(payload)
       }
     end
   end

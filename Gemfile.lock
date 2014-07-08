@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: d8317123373f89decb70f676ae07947d396a8ac8
+  revision: 7e8f71f9514a53dcf4acf391773e4635ee8a95ca
   branch: develop
   specs:
     adhearsion (2.5.3)
@@ -128,7 +128,7 @@ GEM
       multi_json (>= 1.8.4)
     method_source (0.8.2)
     mini_portile (0.6.0)
-    minitest (5.3.5)
+    minitest (5.4.0)
     multi_json (1.10.1)
     mysql2 (0.3.16)
     niceogiri (1.1.2)
