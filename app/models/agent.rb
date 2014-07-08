@@ -8,6 +8,18 @@ class Agent
 
   class << self
 
+
+    def setup_current_callstate_for(peer, status)
+      search = Agent::Registry.detect { |k, v| v.name == peer }
+
+      if search
+        agent = search[1]
+        agent.callstate = status
+        $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
+      end
+    end
+
+
     # Agent.where(availability: :idle, languages: :en).sort_by_idle_time
     #
     def where(hash)

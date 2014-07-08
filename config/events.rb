@@ -14,18 +14,10 @@ Adhearsion::Events.draw do
     AmqpManager.numbers_publish(event)
   end
 
-  # FIXME refactor this urgently:
-  #
   ami name: 'PeerStatus' do |event|
     peer   = event.headers['Peer'][/SIP.(.+)$/,1]
     status = event.headers['PeerStatus'].downcase
-    search = Agent::Registry.detect { |k,v| v.name == peer }
-
-    if search
-      agent = search[1]
-      agent.callstate = status
-      $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
-    end
+    Agent.setup_current_callstate_for(peer, status)
 
     AmqpManager.numbers_publish(event)
   end
@@ -39,6 +31,11 @@ Adhearsion::Events.draw do
   end
 
   ami name: 'Newstate' do |event|
+    if event.headers['ChannelState'] == '6' # 6 => Up
+      peer = event.headers['CallerIDNum'][/\d+/]
+      Agent.setup_current_callstate_for(peer, 'talking')
+    end
+
     AmqpManager.numbers_publish(event)
   end
 
@@ -51,6 +48,9 @@ Adhearsion::Events.draw do
   end
 
   ami name: 'Hangup' do |event|
+    peer = event.headers['CallerIDNum'][/\d+/]
+    Agent.setup_current_callstate_for(peer, 'registered')
+
     AmqpManager.numbers_publish(event)
   end
 end
