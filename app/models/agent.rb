@@ -14,8 +14,10 @@ class Agent
 
       if search
         agent = search[1]
-        agent.callstate = status
-        $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
+        if !(status == 'registered' && agent.callstate == 'talking')
+          agent.callstate = status
+          $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
+        end
       end
     end
 
