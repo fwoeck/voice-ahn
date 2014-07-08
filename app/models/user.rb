@@ -1,4 +1,8 @@
+require './app/models/language'
 require './app/models/agent'
+require './app/models/skill'
+require './app/models/role'
+
 
 class User < Sequel::Model
 
