@@ -16,6 +16,9 @@ Adhearsion::Events.draw do
 
   ami name: 'PeerStatus' do |event|
     AmqpManager.numbers_publish(event)
+
+    peer   = event.headers['Peer'][/SIP.(.+)$/,1]
+    status = event.headers['PeerStatus']
   end
 
   ami name: 'NewCallerid' do |event|

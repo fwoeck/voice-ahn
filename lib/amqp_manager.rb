@@ -1,3 +1,5 @@
+require './app/models/agent'
+
 module AmqpManager
   class << self
 

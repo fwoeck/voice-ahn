@@ -1,7 +1,10 @@
 class Agent
 
   Registry = ThreadSafe::Cache.new
-  State    = Struct.new(:languages, :skills, :roles, :availability, :idle_since)
+  State    = Struct.new(
+               :id, :name, :languages, :skills, :roles,
+               :availability, :callstate, :idle_since
+             )
 
   class << self
 
@@ -48,7 +51,7 @@ class Agent
     # FIXME This could be an instance method:
     #
     def update_status_field(setter, value, uid)
-      Registry[uid].send(setter, value)
+      Registry[uid].send setter, (value[/,/] ? value.split(',') : value)
       Adhearsion.logger.info "Update #{uid}'s state: #{setter}'#{value}'"
     end
 
@@ -66,9 +69,8 @@ class Agent
       data  = parsed_json(payload)
       uid   = data.delete('user_id').to_i # FIXME This could return an Agent instance
       key   = data.keys.first
-      value = data[key]
 
-      [uid, key, value]
+      [uid, key, data[key]]
     end
 
 
