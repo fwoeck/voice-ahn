@@ -1,8 +1,4 @@
-require './app/models/language'
-require './app/models/agent'
-require './app/models/skill'
-require './app/models/role'
-
+Dir['./app/models/*.rb'].each { |f| require f }
 
 class User < Sequel::Model
 

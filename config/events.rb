@@ -1,10 +1,11 @@
-# encoding: utf-8
-
 Adhearsion::Events.draw do
 
   # punchblock do |event|
   #   puts event
   # end
+
+  ChannelRegex = /^SIP.(\d+)/
+
 
   ami name: 'Bridge' do |event|
     AmqpManager.numbers_publish(event)
@@ -16,7 +17,7 @@ Adhearsion::Events.draw do
 
 
   ami name: 'PeerStatus' do |event|
-    peer  = event.headers['Peer'][/SIP.(.+)$/,1]
+    peer  = event.headers['Peer'][ChannelRegex, 1]
     agent = Agent.find_agent_for(peer)
 
     if agent && agent.callstate != 'talking'
@@ -39,7 +40,7 @@ Adhearsion::Events.draw do
 
   ami name: 'Newstate' do |event|
     if event.headers['ChannelState'] == '6' # 6 => Up
-      peer  = event.headers['CallerIDNum'][/\d+/]
+      peer  = event.headers['Channel'][ChannelRegex, 1]
       agent = Agent.find_agent_for(peer)
 
       Agent.setup_current_callstate_for(agent, 'talking')
@@ -59,7 +60,7 @@ Adhearsion::Events.draw do
 
 
   ami name: 'Hangup' do |event|
-    peer  = event.headers['CallerIDNum'][/\d+/]
+    peer  = event.headers['Channel'][ChannelRegex, 1]
     agent = Agent.find_agent_for(peer)
 
     Agent.setup_current_callstate_for(agent, 'registered')

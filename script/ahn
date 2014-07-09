@@ -6,8 +6,7 @@ STDERR.sync = true
 require File.expand_path('../../config/environment',  __FILE__)
 require 'adhearsion/cli_commands'
 
-require './lib/redis_connection'
-require './lib/amqp_manager'
+Dir['./lib/*.rb'].each { |f| require f }
 
 AmqpManager.start
 Adhearsion::CLI::AhnCommand.start
