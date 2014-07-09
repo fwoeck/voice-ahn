@@ -3,10 +3,20 @@ class Agent
   Registry = ThreadSafe::Hash.new
   State    = Struct.new(
                :id, :name, :languages, :skills, :roles,
-               :availability, :callstate, :idle_since
+               :availability, :agent_state, :idle_since
              )
 
   class << self
+
+
+    def availability_keyname(agent)
+      "#{WimConfig.rails_env}.availability.#{agent.id}"
+    end
+
+
+    def agent_state_keyname(agent)
+      "#{WimConfig.rails_env}.agent_state.#{agent.id}"
+    end
 
 
     def find_agent_for(peer)
@@ -14,11 +24,11 @@ class Agent
     end
 
 
-    def setup_current_callstate_for(agent, status)
+    def setup_current_state_for(agent, status)
       return unless agent && status
 
-      agent.callstate = status
-      $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
+      agent.agent_state = status
+      $redis.set(agent_state_keyname(agent), status)
     end
 
 

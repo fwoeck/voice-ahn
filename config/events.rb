@@ -20,9 +20,9 @@ Adhearsion::Events.draw do
     peer  = event.headers['Peer'][ChannelRegex, 1]
     agent = Agent.find_agent_for(peer)
 
-    if agent && agent.callstate != 'talking'
+    if agent && agent.agent_state != 'talking'
       status = event.headers['PeerStatus'].downcase
-      Agent.setup_current_callstate_for(agent, status)
+      Agent.setup_current_state_for(agent, status)
     end
 
     AmqpManager.numbers_publish(event)
@@ -41,9 +41,11 @@ Adhearsion::Events.draw do
   ami name: 'Newstate' do |event|
     if event.headers['ChannelState'] == '6' # 6 => Up
       peer  = event.headers['Channel'][ChannelRegex, 1]
+      tcid  = event.target_call_id
       agent = Agent.find_agent_for(peer)
 
-      Agent.setup_current_callstate_for(agent, 'talking')
+      Agent.setup_current_state_for(agent, 'talking')
+      # Call.update_call_stats(tcid) if tcid
     end
 
     AmqpManager.numbers_publish(event)
@@ -63,7 +65,7 @@ Adhearsion::Events.draw do
     peer  = event.headers['Channel'][ChannelRegex, 1]
     agent = Agent.find_agent_for(peer)
 
-    Agent.setup_current_callstate_for(agent, 'registered')
+    Agent.setup_current_state_for(agent, 'registered')
     AmqpManager.numbers_publish(event)
   end
 end

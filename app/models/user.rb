@@ -8,12 +8,12 @@ class User < Sequel::Model
 
 
   def availability
-    $redis.get(availability_keyname) || 'unknown'
+    $redis.get(Agent.availability_keyname self) || 'unknown'
   end
 
 
-  def callstate
-    $redis.get(callstate_keyname) || 'unknown'
+  def agent_state
+    $redis.get(Agent.agent_state_keyname self) || 'unknown'
   end
 
 
@@ -22,7 +22,7 @@ class User < Sequel::Model
       Agent::Registry[u.id] = Agent::State.new(
         u.id, u.name, u.languages.map(&:name),
         u.skills.map(&:name), u.roles.map(&:name),
-        u.availability, u.callstate, Time.now.utc
+        u.availability, u.agent_state, Time.now.utc
       )
     end
   end
@@ -30,17 +30,6 @@ class User < Sequel::Model
 
   def self.all_ids
     self.select(:id).all.map(&:id)
-  end
-
-
-  private
-
-  def availability_keyname
-    "#{WimConfig.rails_env}.availability.#{self.id}"
-  end
-
-  def callstate_keyname
-    "#{WimConfig.rails_env}.callstate.#{self.id}"
   end
 end
 
