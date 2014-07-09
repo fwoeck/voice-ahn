@@ -22,15 +22,34 @@ class Call
   end
 
 
+  def current_time
+    Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%L+00:00")
+  end
+
+
   def save
     $redis.set(Call.key_name(target_id), headers.to_json, ex: 1.day)
-    # TODO Send out AMQP-message
+
+    event = {
+      'target_call_id' => target_id,
+      'timestamp'      => current_time,
+      'name'           => 'CallUpdate',
+      'headers'        => headers
+    }
+    AmqpManager.numbers_publish(event)
   end
 
 
   def destroy
     $redis.del(Call.key_name target_id)
-    # TODO Send out AMQP-message
+
+    event = {
+      'target_call_id' => target_id,
+      'timestamp'      => current_time,
+      'name'           => 'CallUpdate',
+      'headers'        => {'Hungup' => true}
+    }
+    AmqpManager.numbers_publish(event)
   end
 
 
