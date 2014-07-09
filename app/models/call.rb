@@ -9,18 +9,15 @@ class Call
   # FIXME Refactor n-arity into parameter object:
   #
   def initialize(tcid=nil, chan1=nil, chan2=nil, lang=nil, skill=nil, hungup=nil, cid=nil)
-    @target_id = tcid;  @hungup    = hungup
-    @channel1  = chan1; @channel2  = chan2
-    @language  = lang;  @skill     = skill
-    @caller_id = cid
+    @target_id = tcid; @hungup = hungup; @channel1 = chan1; @channel2 = chan2
+    @language = lang; @skill = skill; @caller_id = cid
   end
 
 
   def headers
     {
-      'Channel1' => channel1,  'Channel2' => channel2,
-      'Language' => language,  'Skill'    => skill,
-      'CallerId' => caller_id, 'Hungup'   => hungup
+      'Channel1' => channel1, 'Channel2' => channel2, 'Language' => language,
+      'Skill' => skill, 'CallerId' => caller_id, 'Hungup' => hungup
     }
   end
 
@@ -60,9 +57,8 @@ class Call
     fields = JSON.parse entry
 
     new(tcid,
-      fields['Channel1'], fields['Channel2'],
-      fields['Language'], fields['Skill'],
-      fields['Hungup'], fields['CallerId']
+      fields['Channel1'], fields['Channel2'], fields['Language'],
+      fields['Skill'], fields['Hungup'], fields['CallerId']
     )
   end
 
@@ -84,8 +80,9 @@ class Call
     call = Call.find(tcid)
 
     if call
-      call.channel1 = event.headers['Channel1'] || event.headers['Channel']
-      call.channel2 = event.headers['Channel2']
+      call.caller_id = call.caller_id || event.headers['CallerIDName']
+      call.channel1  = event.headers['Channel1'] || event.headers['Channel']
+      call.channel2  = event.headers['Channel2']
       call.save
     end
   end
