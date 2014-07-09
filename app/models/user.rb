@@ -8,12 +8,12 @@ class User < Sequel::Model
 
 
   def availability
-    $redis.get(Agent.availability_keyname self) || 'unknown'
+    @memo_availability ||= ($redis.get(Agent.availability_keyname self) || 'unknown')
   end
 
 
   def agent_state
-    $redis.get(Agent.agent_state_keyname self) || 'unknown'
+    @memo_agent_state ||= ($redis.get(Agent.agent_state_keyname self) || 'unknown')
   end
 
 
@@ -32,5 +32,6 @@ class User < Sequel::Model
     self.select(:id).all.map(&:id)
   end
 end
+
 
 User.fetch_all_agents

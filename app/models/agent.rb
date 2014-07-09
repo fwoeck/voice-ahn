@@ -1,12 +1,19 @@
 class Agent
 
-  Registry = ThreadSafe::Hash.new
-  State    = Struct.new(
-               :id, :name, :languages, :skills, :roles,
-               :availability, :agent_state, :idle_since
-             )
+  ChannelRegex = /^SIP.(\d+)/
+  Registry     = ThreadSafe::Hash.new
+  State        = Struct.new(
+                   :id, :name, :languages, :skills, :roles,
+                   :availability, :agent_state, :idle_since
+                 )
 
   class << self
+
+
+    def get_peer_from(event)
+      peer = event.headers['Peer'] || event.headers['Channel']
+      peer[ChannelRegex, 1] if peer # ! This might be an external callerid.
+    end
 
 
     def availability_keyname(agent)
@@ -19,8 +26,9 @@ class Agent
     end
 
 
-    def find_agent_for(peer)
-      (Agent::Registry.detect { |k, v| v.name == peer } || [nil, nil])[1]
+    def find_for(event)
+      peer = get_peer_from(event)
+      (Agent::Registry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
     end
 
 
