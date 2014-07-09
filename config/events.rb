@@ -21,8 +21,8 @@ Adhearsion::Events.draw do
     agent = Agent.find_for(event)
 
     if agent && agent.agent_state != 'talking'
-      status = event.headers['PeerStatus'].downcase
-      Agent.update_state_for(agent, status)
+      state = event.headers['PeerStatus'].downcase
+      Agent.update_state_for(agent, state)
     end
 
     AmqpManager.numbers_publish(event)
@@ -40,9 +40,9 @@ Adhearsion::Events.draw do
 
   ami name: 'Newstate' do |event|
     if event.headers['ChannelState'] == '6' # 6 => Up
-      agent = Agent.find_for(event)
+      Call.update_state_for(event)
 
-      Call.setup_new_state_for(event)
+      agent = Agent.find_for(event)
       Agent.update_state_for(agent, 'talking')
     end
 

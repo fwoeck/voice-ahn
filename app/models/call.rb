@@ -2,20 +2,23 @@ require 'json'
 
 class Call
 
-  # TODO add :chosen_language, :chosen_skill
-  #
-  attr_accessor :channel1, :channel2, :target_id
+  attr_accessor :channel1, :channel2, :target_id, :language, :skill
 
 
-  def initialize(tcid=nil, chan1=nil, chan2=nil)
+  def initialize(tcid=nil, chan1=nil, chan2=nil, lang=nil, skill=nil)
     @target_id = tcid
     @channel1  = chan1
     @channel2  = chan2
+    @language  = lang
+    @skill     = skill
   end
 
 
   def headers
-    {'Channel1' => channel1, 'Channel2' => channel2}
+    {
+      'Channel1' => channel1, 'Channel2' => channel2,
+      'Language' => language, 'Skill'    => skill
+    }
   end
 
 
@@ -33,10 +36,13 @@ class Call
 
   def self.find(tcid)
     return unless tcid
-
     entry  = $redis.get(Call.key_name tcid) || new.headers.to_json
     fields = JSON.parse entry
-    new(tcid, fields['Channel1'], fields['Channel2'])
+
+    new(tcid,
+      fields['Channel1'], fields['Channel2'],
+      fields['Language'], fields['Skill']
+    )
   end
 
 
@@ -57,19 +63,8 @@ class Call
     call = Call.find(tcid)
 
     if call
-      call.channel1 = event.headers['Channel1']
+      call.channel1 = event.headers['Channel1'] || event.headers['Channel']
       call.channel2 = event.headers['Channel2']
-      call.save
-    end
-  end
-
-
-  def self.setup_new_state_for(event)
-    tcid = event.target_call_id
-    call = Call.find(tcid)
-
-    if call
-      call.channel1 = event.headers['Channel']
       call.save
     end
   end
