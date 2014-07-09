@@ -22,7 +22,7 @@ Adhearsion::Events.draw do
 
     if agent && agent.agent_state != 'talking'
       status = event.headers['PeerStatus'].downcase
-      Agent.setup_current_state_for(agent, status)
+      Agent.update_state_for(agent, status)
     end
 
     AmqpManager.numbers_publish(event)
@@ -43,7 +43,7 @@ Adhearsion::Events.draw do
       agent = Agent.find_for(event)
 
       Call.setup_new_state_for(event)
-      Agent.setup_current_state_for(agent, 'talking')
+      Agent.update_state_for(agent, 'talking')
     end
 
     AmqpManager.numbers_publish(event)
@@ -63,7 +63,7 @@ Adhearsion::Events.draw do
     Call.close_state_for(event)
 
     agent = Agent.find_for(event)
-    Agent.setup_current_state_for(agent, 'registered')
+    Agent.update_state_for(agent, 'registered')
 
     AmqpManager.numbers_publish(event)
   end

@@ -2,6 +2,8 @@ require 'json'
 
 class Call
 
+  # TODO add :chosen_language, :chosen_skill
+  #
   attr_accessor :channel1, :channel2, :target_id
 
 

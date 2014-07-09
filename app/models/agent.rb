@@ -32,7 +32,7 @@ class Agent
     end
 
 
-    def setup_current_state_for(agent, status)
+    def update_state_for(agent, status)
       return unless agent && status
 
       agent.agent_state = status
