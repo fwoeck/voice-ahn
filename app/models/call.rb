@@ -2,22 +2,21 @@ require 'json'
 
 class Call
 
-  attr_accessor :channel1, :channel2, :target_id, :language, :skill
+  attr_accessor :channel1, :channel2, :target_id, :language, :skill, :hungup
 
 
-  def initialize(tcid=nil, chan1=nil, chan2=nil, lang=nil, skill=nil)
-    @target_id = tcid
-    @channel1  = chan1
-    @channel2  = chan2
-    @language  = lang
-    @skill     = skill
+  def initialize(tcid=nil, chan1=nil, chan2=nil, lang=nil, skill=nil, hungup=nil)
+    @target_id = tcid;  @hungup    = hungup
+    @channel1  = chan1; @channel2  = chan2
+    @language  = lang;  @skill     = skill
   end
 
 
   def headers
     {
       'Channel1' => channel1, 'Channel2' => channel2,
-      'Language' => language, 'Skill'    => skill
+      'Language' => language, 'Skill'    => skill,
+      'Hungup'   => hungup
     }
   end
 
@@ -29,26 +28,25 @@ class Call
 
   def save
     $redis.set(Call.key_name(target_id), headers.to_json, ex: 1.day)
-
-    event = {
-      'target_call_id' => target_id,
-      'timestamp'      => current_time,
-      'name'           => 'CallUpdate',
-      'headers'        => headers
-    }
-    AmqpManager.numbers_publish(event)
+    publish_to_numbers
   end
 
 
   def destroy
     $redis.del(Call.key_name target_id)
+    self.hungup = true
+    publish_to_numbers
+  end
 
+
+  def publish_to_numbers
     event = {
-      'target_call_id' => target_id,
-      'timestamp'      => current_time,
+      'target_call_id' =>  target_id,
+      'timestamp'      =>  current_time,
       'name'           => 'CallUpdate',
-      'headers'        => {'Hungup' => true}
+      'headers'        =>  headers
     }
+
     AmqpManager.numbers_publish(event)
   end
 
@@ -60,7 +58,8 @@ class Call
 
     new(tcid,
       fields['Channel1'], fields['Channel2'],
-      fields['Language'], fields['Skill']
+      fields['Language'], fields['Skill'],
+      fields['Hungup']
     )
   end
 
