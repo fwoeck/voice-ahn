@@ -2,21 +2,25 @@ require 'json'
 
 class Call
 
-  attr_accessor :channel1, :channel2, :target_id, :language, :skill, :hungup
+  attr_accessor :channel1, :channel2, :target_id,
+                :language, :skill, :hungup, :caller_id
 
 
-  def initialize(tcid=nil, chan1=nil, chan2=nil, lang=nil, skill=nil, hungup=nil)
+  # FIXME Refactor n-arity into parameter object:
+  #
+  def initialize(tcid=nil, chan1=nil, chan2=nil, lang=nil, skill=nil, hungup=nil, cid=nil)
     @target_id = tcid;  @hungup    = hungup
     @channel1  = chan1; @channel2  = chan2
     @language  = lang;  @skill     = skill
+    @caller_id = cid
   end
 
 
   def headers
     {
-      'Channel1' => channel1, 'Channel2' => channel2,
-      'Language' => language, 'Skill'    => skill,
-      'Hungup'   => hungup
+      'Channel1' => channel1,  'Channel2' => channel2,
+      'Language' => language,  'Skill'    => skill,
+      'CallerId' => caller_id, 'Hungup'   => hungup
     }
   end
 
@@ -58,7 +62,7 @@ class Call
     new(tcid,
       fields['Channel1'], fields['Channel2'],
       fields['Language'], fields['Skill'],
-      fields['Hungup']
+      fields['Hungup'], fields['CallerId']
     )
   end
 
