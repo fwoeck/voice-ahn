@@ -22,7 +22,7 @@ class Agent
     end
 
 
-    # Agent.where(availability: :idle, languages: :en).sort_by_idle_time
+    # Agent.where(availability: :ready, languages: :en).sort_by_idle_time
     #
     def where(hash)
       keys = hash.keys
@@ -70,10 +70,13 @@ class Agent
     end
 
 
+    # FIXME This will not work - it requires to know
+    #       the agent's talking state, too.
+    #
     # FIXME This could be an instance method:
     #
     def update_idle_since(key, value, uid)
-      if key == 'availability' && value == 'idle'
+      if key == 'availability' && value == 'ready'
         Registry[uid].idle_since = Time.now.utc
       end
     end
