@@ -33,9 +33,8 @@ class Call
 
 
   def destroy
-    $redis.del(Call.key_name target_id)
     self.hungup = true
-    publish_to_numbers
+    save
   end
 
 
