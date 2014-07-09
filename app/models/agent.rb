@@ -1,14 +1,46 @@
 class Agent
 
-  Registry = ThreadSafe::Hash.new
-  State    = Struct.new(
-               :id, :name, :languages, :skills, :roles,
-               :availability, :callstate, :idle_since
-             )
+  ChannelRegex = /^SIP.(\d+)/
+  Registry     = ThreadSafe::Hash.new
+  State        = Struct.new(
+                   :id, :name, :languages, :skills, :roles,
+                   :availability, :agent_state, :idle_since
+                 )
 
   class << self
 
-    # Agent.where(availability: :idle, languages: :en).sort_by_idle_time
+
+    def get_peer_from(event)
+      peer = event.headers['Peer'] || event.headers['Channel']
+      peer[ChannelRegex, 1] if peer # ! This might be an external callerid.
+    end
+
+
+    def availability_keyname(agent)
+      "#{WimConfig.rails_env}.availability.#{agent.id}"
+    end
+
+
+    def agent_state_keyname(agent)
+      "#{WimConfig.rails_env}.agent_state.#{agent.id}"
+    end
+
+
+    def find_for(event)
+      peer = get_peer_from(event)
+      (Agent::Registry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
+    end
+
+
+    def update_state_for(agent, status)
+      return unless agent && status
+
+      agent.agent_state = status
+      $redis.set(agent_state_keyname(agent), status)
+    end
+
+
+    # Agent.where(availability: :ready, languages: :en).sort_by_idle_time
     #
     def where(hash)
       keys = hash.keys
@@ -56,10 +88,13 @@ class Agent
     end
 
 
+    # FIXME This will not work - it requires to know
+    #       the agent's talking state, too.
+    #
     # FIXME This could be an instance method:
     #
     def update_idle_since(key, value, uid)
-      if key == 'availability' && value == 'idle'
+      if key == 'availability' && value == 'ready'
         Registry[uid].idle_since = Time.now.utc
       end
     end

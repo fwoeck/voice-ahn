@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 Adhearsion::Events.draw do
 
   # punchblock do |event|
@@ -11,24 +9,25 @@ Adhearsion::Events.draw do
   end
 
   ami name: 'BridgeExec' do |event|
-    AmqpManager.numbers_publish(event)
-  end
-
-  # FIXME refactor this urgently:
-  #
-  ami name: 'PeerStatus' do |event|
-    peer   = event.headers['Peer'][/SIP.(.+)$/,1]
-    status = event.headers['PeerStatus'].downcase
-    search = Agent::Registry.detect { |k,v| v.name == peer }
-
-    if search
-      agent = search[1]
-      agent.callstate = status
-      $redis.set("#{WimConfig.rails_env}.callstate.#{agent.id}", status)
+    if event.headers['Response'] == 'Success'
+      Call.update_state_for(event)
     end
 
     AmqpManager.numbers_publish(event)
   end
+
+
+  ami name: 'PeerStatus' do |event|
+    agent = Agent.find_for(event)
+
+    if agent && agent.agent_state != 'talking'
+      state = event.headers['PeerStatus'].downcase
+      Agent.update_state_for(agent, state)
+    end
+
+    AmqpManager.numbers_publish(event)
+  end
+
 
   ami name: 'NewCallerid' do |event|
     AmqpManager.numbers_publish(event)
@@ -38,9 +37,18 @@ Adhearsion::Events.draw do
     AmqpManager.numbers_publish(event)
   end
 
+
   ami name: 'Newstate' do |event|
+    if event.headers['ChannelState'] == '6' # 6 => Up
+      Call.update_state_for(event)
+
+      agent = Agent.find_for(event)
+      Agent.update_state_for(agent, 'talking')
+    end
+
     AmqpManager.numbers_publish(event)
   end
+
 
   ami name: 'Newchannel' do |event|
     AmqpManager.numbers_publish(event)
@@ -50,7 +58,13 @@ Adhearsion::Events.draw do
     AmqpManager.numbers_publish(event)
   end
 
+
   ami name: 'Hangup' do |event|
+    Call.close_state_for(event)
+
+    agent = Agent.find_for(event)
+    Agent.update_state_for(agent, 'registered')
+
     AmqpManager.numbers_publish(event)
   end
 end

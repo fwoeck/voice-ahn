@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 Adhearsion.config do |config|
 
   config.production do |env|

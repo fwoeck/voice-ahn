@@ -1,12 +1,11 @@
-# encoding: utf-8
-#
+ENV['TZ'] = 'UTC'
+
 require 'yaml'
 require 'bundler'
 Bundler.setup
 
 require 'adhearsion'
 require 'active_support/all'
-
 
 Time.zone = 'Etc/UTC'
 WimConfig = YAML.load_file('./config/app.yml')
