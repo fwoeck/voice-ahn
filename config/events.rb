@@ -39,7 +39,7 @@ Adhearsion::Events.draw do
 
 
   ami name: 'Newstate' do |event|
-    if ['5', '6'].include?(event.headers['ChannelState'])
+    if ['4', '5', '6'].include?(event.headers['ChannelState'])
       Call.update_state_for(event)
 
       agent = Agent.find_for(event)

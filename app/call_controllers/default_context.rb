@@ -5,8 +5,10 @@ class DefaultContext < Adhearsion::CallController
   def run
     answer
 
+    # choose language
+    #
     input = ask 'wimdu/en_welcome_to_wimdu', timeout: 5, limit: 1
-    play 'wimdu/en_sorry_no_foreign_language' if input.utterance == '1'
+    # play 'wimdu/en_sorry_no_foreign_language' if input.utterance == '1'
 
     play 'wimdu/en_how_can_we_help'
 
