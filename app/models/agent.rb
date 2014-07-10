@@ -41,9 +41,17 @@ class Agent
 
 
     def where(hash)
+      set_availability_scope(hash)
       keys = hash.keys
+
       assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
       filtered_agent_ids(keys, hash, User.all_ids)
+    end
+
+
+    def set_availability_scope(hash)
+      hash[:agent_state]  = :registered
+      hash[:availability] = :ready
     end
 
 

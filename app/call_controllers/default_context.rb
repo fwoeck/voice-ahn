@@ -57,10 +57,8 @@ class DefaultContext < Adhearsion::CallController
       while !agent_id do
         sleep 1
         agent_id = Agent.where(
-          availability: :ready,
-          # TODO state talking
-          languages:     lang,
-          skills:        skill
+          languages: lang,
+          skills:    skill
         ).sort_by_idle_time.first
       end
       agent = Agent::Registry[agent_id]
