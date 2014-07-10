@@ -20,15 +20,11 @@ class DefaultContext < Adhearsion::CallController
     operator = (input.utterance == '2' ? 'SIP/102' : 'SIP/103')
     status   = dial operator, for: 15.seconds
 
-    case status.result
-    when :answer
-      # ok
-    else
-      # failed/busy
+    while status.result != :answer do
+      play 'wimdu/en_thank_you_you_will'
+      status = dial operator, for: 15.seconds
     end
-  end
 
-  def log_call
-    logger.info "Call from: #{call.from}, id: #{call.variables[:x_agi_callerid]}, chan: #{call.variables[:x_agi_channel]}"
+    hangup
   end
 end
