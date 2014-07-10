@@ -100,20 +100,33 @@ class Call
   end
 
 
+  def self.detect_callers_for(event, call)
+    call.caller_id = call.caller_id || event.headers['CallerIDName']
+    call.called_at = call.called_at || current_time
+  end
+
+
+  def self.detect_channels_for(event, call)
+    chan  = event.headers['Channel']
+    chan1 = event.headers['Channel1']
+    chan2 = event.headers['Channel2']
+
+    call.channel1 = call.channel1 || chan1 || chan
+    if chan2
+      call.channel2 = call.channel2 || (call.channel1 == chan1 ? chan2 : chan1)
+    else
+      call.initiator = true if call.channel1[/sipgate|skype|SIP.100-/]
+    end
+  end
+
+
   def self.update_state_for(event)
     tcid = event.target_call_id
     call = Call.find(tcid)
 
     if call
-      call.caller_id = call.caller_id || event.headers['CallerIDName']
-      call.called_at = call.called_at || current_time
-
-      call.channel1  = event.headers['Channel1'] || event.headers['Channel']
-      call.channel2  = event.headers['Channel2']
-
-      if event['name'] == 'Newstate' && call.channel1.include?(call.caller_id)
-        call.initiator = true
-      end
+      detect_callers_for(event, call)
+      detect_channels_for(event, call)
       call.save
     end
   end
