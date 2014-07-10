@@ -10,9 +10,12 @@ class Agent
   class << self
 
 
+    # FIXME This won't work for external callers, where
+    #       "Peer" doesn't match 3 digits:
+    #
     def get_peer_from(event)
       peer = event.headers['Peer'] || event.headers['Channel']
-      peer[ChannelRegex, 1] if peer # ! This might be an external callerid.
+      peer[ChannelRegex, 1] if peer
     end
 
 
@@ -88,7 +91,7 @@ class Agent
     end
 
 
-    # FIXME This could be an instance method:
+    # TODO We should use real Agent instances here:
     #
     def update_status_field(setter, value, uid)
       Registry[uid].send setter, (value[/,/] ? value.split(',') : value)
@@ -96,21 +99,21 @@ class Agent
     end
 
 
-    # FIXME This will not work - it requires to know
-    #       the agent's talking state, too.
-    #
-    # FIXME This could be an instance method:
+    # FIXME This doesn't work - we need to take the agent_state
+    #       into account.
     #
     def update_idle_since(key, value, uid)
-      if key == 'availability' && value == 'ready'
+      if key == 'availability' && value == 'registered'
         Registry[uid].idle_since = Time.now.utc
       end
     end
 
 
+    # TODO We should use real Agent instances here:
+    #
     def get_key_value_pair(payload)
       data  = parsed_json(payload)
-      uid   = data.delete('user_id').to_i # FIXME This could return an Agent instance
+      uid   = data.delete('user_id').to_i
       key   = data.keys.first
 
       [uid, key, data[key]]
