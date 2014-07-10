@@ -2,39 +2,47 @@ require 'json'
 
 class Call
 
-  attr_accessor :channel1, :channel2, :target_id,
-                :language, :skill, :hungup, :caller_id
+  attr_accessor :channel1, :channel2, :target_id, :language,
+                :called_at, :queued_at, :hungup_at, :dispatched_at,
+                :skill, :hungup, :caller_id, :initiator
 
 
-  # FIXME Refactor n-arity into parameter object:
-  #
-  def initialize(tcid=nil, chan1=nil, chan2=nil, lang=nil, skill=nil, hungup=nil, cid=nil)
-    @target_id = tcid; @hungup = hungup; @channel1 = chan1; @channel2 = chan2
-    @language = lang; @skill = skill; @caller_id = cid
+  def initialize(par=nil)
+    if par
+      @called_at     = par.fetch(:called_at, nil)
+      @caller_id     = par.fetch(:caller_id, nil)
+      @channel1      = par.fetch(:channel1, nil)
+      @channel2      = par.fetch(:channel2, nil)
+      @dispatched_at = par.fetch(:dispatched_at, nil)
+      @hungup        = par.fetch(:hungup, nil)
+      @hungup_at     = par.fetch(:hungup_at, nil)
+      @initiator     = par.fetch(:initiator, nil)
+      @language      = par.fetch(:language, nil)
+      @queued_at     = par.fetch(:queued_at, nil)
+      @skill         = par.fetch(:skill, nil)
+      @target_id     = par.fetch(:target_id)
+    end
   end
 
 
   def headers
     {
-      'Channel1' => channel1, 'Channel2' => channel2, 'Language' => language,
-      'Skill' => skill, 'CallerId' => caller_id, 'Hungup' => hungup
+      'Channel1' => channel1, 'Channel2' => channel2, 'Language' => language, 'Skill' => skill,
+      'CallerId' => caller_id, 'Hungup' => hungup, 'Initiator' => initiator, 'CalledAt' => called_at,
+      'QueuedAt' => queued_at, 'HungupAt' => hungup_at, 'DispatchedAt' => dispatched_at
     }
   end
 
 
-  def current_time
-    Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%L+00:00")
-  end
-
-
   def save
-    $redis.set(Call.key_name(target_id), headers.to_json, ex: 1.day)
+    $redis.set(Call.key_name(target_id), headers.to_json, ex: 3.hours)
     publish_to_numbers
   end
 
 
   def destroy
-    self.hungup = true
+    self.hungup    = true
+    self.hungup_at = Call.current_time
     save
   end
 
@@ -42,7 +50,7 @@ class Call
   def publish_to_numbers
     event = {
       'target_call_id' =>  target_id,
-      'timestamp'      =>  current_time,
+      'timestamp'      =>  Call.current_time,
       'name'           => 'CallUpdate',
       'headers'        =>  headers
     }
@@ -56,15 +64,32 @@ class Call
     entry  = $redis.get(Call.key_name tcid) || new.headers.to_json
     fields = JSON.parse entry
 
-    new(tcid,
-      fields['Channel1'], fields['Channel2'], fields['Language'],
-      fields['Skill'], fields['Hungup'], fields['CallerId']
-    )
+    par = {
+      called_at:     fields['CalledAt'],
+      caller_id:     fields['CallerId'],
+      channel1:      fields['Channel1'],
+      channel2:      fields['Channel2'],
+      dispatched_at: fields['DispatchedAt'],
+      hungup:        fields['Hungup'],
+      hungup_at:     fields['HungupAt'],
+      initiator:     fields['Initiator'],
+      language:      fields['Language'],
+      queued_at:     fields['QueuedAt'],
+      skill:         fields['Skill'],
+      target_id:     tcid
+    }
+
+    new(par)
   end
 
 
   def self.key_name(tcid)
     "#{WimConfig.rails_env}.call.#{tcid}"
+  end
+
+
+  def self.current_time
+    Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%L+00:00")
   end
 
 
@@ -81,6 +106,9 @@ class Call
 
     if call
       call.caller_id = call.caller_id || event.headers['CallerIDName']
+      call.called_at = call.called_at || current_time
+    # call.initiator = true if "no other call with same caller_id exists"
+
       call.channel1  = event.headers['Channel1'] || event.headers['Channel']
       call.channel2  = event.headers['Channel2']
       call.save
