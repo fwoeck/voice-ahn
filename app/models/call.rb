@@ -50,7 +50,7 @@ class Call
   def publish_to_numbers
     event = {
       'target_call_id' =>  target_id,
-      'timestamp'      =>  Call.current_time,
+      'timestamp'      =>  Call.current_time_ms,
       'name'           => 'CallUpdate',
       'headers'        =>  headers
     }
@@ -105,6 +105,11 @@ class Call
 
 
   def self.current_time
+    Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+  end
+
+
+  def self.current_time_ms
     Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%L+00:00")
   end
 
