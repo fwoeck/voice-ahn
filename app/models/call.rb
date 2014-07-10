@@ -59,6 +59,22 @@ class Call
   end
 
 
+  def self.set_language_for(tcid, lang, queue_call=false)
+    call = find(tcid)
+    call.queued_at = current_time if queue_call
+    call.language = lang
+    call.save
+  end
+
+
+  def self.set_skill_for(tcid, skill, queue_call=false)
+    call = find(tcid)
+    call.queued_at = current_time if queue_call
+    call.skill = skill
+    call.save
+  end
+
+
   def self.find(tcid)
     return unless tcid
     entry  = $redis.get(Call.key_name tcid) || new.headers.to_json

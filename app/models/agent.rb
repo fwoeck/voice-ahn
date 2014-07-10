@@ -40,8 +40,6 @@ class Agent
     end
 
 
-    # Agent.where(availability: :ready, languages: :en).sort_by_idle_time
-    #
     def where(hash)
       keys = hash.keys
       assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
@@ -60,6 +58,8 @@ class Agent
 
 
     def current_key_matches?(hash, key, uid)
+      return false unless Registry[uid]
+
       value   = Registry[uid].send(key)
       request = hash[key].to_s
 
