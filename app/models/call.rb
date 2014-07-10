@@ -105,7 +105,7 @@ class Call
     call = Call.find(tcid)
 
     if call
-      call.caller_id = call.caller_id || event.headers['CallerIDNum']
+      call.caller_id = call.caller_id || event.headers['CallerIDName']
       call.called_at = call.called_at || current_time
 
       call.channel1  = event.headers['Channel1'] || event.headers['Channel']
