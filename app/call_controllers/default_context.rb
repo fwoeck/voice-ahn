@@ -5,70 +5,71 @@ class DefaultContext < Adhearsion::CallController
   def run
     answer
 
-    # Choose a language
-    #
-    input = ask 'wimdu/en_welcome_to_wimdu', timeout: 5, limit: 1
-    lang  = case input.utterance
-    when '1'
-      'de'
-    when '2'
-      'en'
-    when '3'
-      'es'
-    when '4'
-      'fr'
-    when '5'
-      'it'
-    else
-      'en'
-    end
-
+    lang = choose_a_language
     Call.set_language_for(call.id, lang)
+
     play 'wimdu/en_how_can_we_help'
 
-    # Choose a skill
-    #
+    skill = choose_a_skill
+    Call.set_skill_for(call.id, skill, :queue_call)
+
+    add_call_to_queue(lang, skill)
+
+    hangup
+  end
+
+
+  def choose_a_language
+    input = ask 'wimdu/en_welcome_to_wimdu', timeout: 5, limit: 1
+
+    case input.utterance
+      when '1'; 'de'
+      when '2'; 'en'
+      when '3'; 'es'
+      when '4'; 'fr'
+      when '5'; 'it'
+      else 'en'
+    end
+  end
+
+
+  def choose_a_skill
     input = nil
     while !input || !['1', '2', '3', '4'].include?(input.utterance) do
       play 'wimdu/en_sorry_i_didnt_understand' if input
       input = ask 'wimdu/en_press_two_for_booking', timeout: 5, limit: 1
     end
 
-    skill = case input.utterance
-    when '1'
-      'billing'
-    when '2'
-      'booking'
-    when '3'
-      'offers'
-    when '4'
-      'other'
+    case input.utterance
+      when '1'; 'billing'
+      when '2'; 'booking'
+      when '3'; 'offers'
+      when '4'; 'other'
     end
+  end
 
-    Call.set_skill_for(call.id, skill, :queue_call)
 
+  def add_call_to_queue(lang, skill)
     status = nil
     while !status || status.result != :answer do
       play 'wimdu/en_thank_you_you_will' unless status
 
-      # Be queued
-      #
-      agent_id = nil
-      while !agent_id do
-        sleep 1
-        agent_id = Agent.where(
-          languages: lang,
-          skills:    skill
-        ).sort_by_idle_time.first
-      end
-      agent = Agent::Registry[agent_id]
-
-      # Be dispatched
-      # TODO set dispatched_at timestamp
-      #
+      agent  = get_next_agent_for(lang, skill)
       status = dial "SIP/#{agent.name}", for: 15.seconds
     end
+  end
 
-    hangup
+
+  def get_next_agent_for(lang, skill)
+    agent_id = nil
+    while !agent_id do
+      sleep 1
+      agent_id = Agent.where(
+        languages: lang,
+        skills:    skill
+      ).sort_by_idle_time.first
+    end
+
+    agent = Agent::Registry[agent_id]
   end
 end
