@@ -105,12 +105,15 @@ class Call
     call = Call.find(tcid)
 
     if call
-      call.caller_id = call.caller_id || event.headers['CallerIDName']
+      call.caller_id = call.caller_id || event.headers['CallerIDNum']
       call.called_at = call.called_at || current_time
-    # call.initiator = true if "no other call with same caller_id exists"
 
       call.channel1  = event.headers['Channel1'] || event.headers['Channel']
       call.channel2  = event.headers['Channel2']
+
+      if event['name'] == 'Newstate' && call.channel1.include?(call.caller_id)
+        call.initiator = true
+      end
       call.save
     end
   end
