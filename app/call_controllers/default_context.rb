@@ -59,6 +59,11 @@ class DefaultContext < Adhearsion::CallController
 
       agent  = get_next_agent_for(lang, skill)
       status = dial "SIP/#{agent.name}", for: 15.seconds
+
+      # FIXME We have to make sure, agents are checked-in
+      #       again under any circumstances:
+      #
+      sleep 5
       Agent.checkin(agent.id)
     end
   end
