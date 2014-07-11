@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+AGENT_MUTEX = Mutex.new
+
 class DefaultContext < Adhearsion::CallController
 
   def run
@@ -13,8 +15,9 @@ class DefaultContext < Adhearsion::CallController
     skill = choose_a_skill
     Call.set_skill_for(call.id, skill, :queue_call)
 
-    add_call_to_queue(lang, skill)
-
+    agent = add_call_to_queue(lang, skill)
+  ensure
+    Agent.checkin(agent.id) if agent
     hangup
   end
 
@@ -57,19 +60,22 @@ class DefaultContext < Adhearsion::CallController
       agent  = get_next_agent_for(lang, skill)
       status = dial "SIP/#{agent.name}", for: 15.seconds
     end
+    agent
   end
 
 
   def get_next_agent_for(lang, skill)
-    agent_id = nil
-    while !agent_id do
+    agent = nil
+    while !agent do
       sleep 1
-      agent_id = Agent.where(
-        languages: lang,
-        skills:    skill
-      ).sort_by_idle_time.first
-    end
 
-    agent = Agent::Registry[agent_id]
+      agent = AGENT_MUTEX.synchronize {
+        agent_id = Agent.where(
+          languages: lang, skills: skill
+        ).sort_by_idle_time.first
+        Agent.checkout(agent_id)
+      }
+    end
+    agent
   end
 end

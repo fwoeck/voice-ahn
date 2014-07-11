@@ -3,8 +3,8 @@ class Agent
   ChannelRegex = /^SIP.(\d+)/
   Registry     = ThreadSafe::Hash.new
   State        = Struct.new(
-                   :id, :name, :languages, :skills, :roles,
-                   :availability, :agent_state, :idle_since
+                   :id, :name, :languages, :skills, :roles, :availability,
+                   :agent_state, :idle_since, :locked
                  )
 
   class << self
@@ -43,6 +43,20 @@ class Agent
     end
 
 
+    def checkout(agent_id)
+      agent = Registry[agent_id]
+      agent.locked = 'true' if agent
+      agent
+    end
+
+
+    def checkin(agent_id)
+      agent = Registry[agent_id]
+      agent.locked = 'false' if agent
+      agent
+    end
+
+
     def where(hash)
       set_availability_scope(hash)
       keys = hash.keys
@@ -53,6 +67,7 @@ class Agent
 
 
     def set_availability_scope(hash)
+      hash[:locked]       = :false
       hash[:agent_state]  = :registered
       hash[:availability] = :ready
     end
