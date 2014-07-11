@@ -15,9 +15,8 @@ class DefaultContext < Adhearsion::CallController
     skill = choose_a_skill
     Call.set_skill_for(call.id, skill, :queue_call)
 
-    agent = add_call_to_queue(lang, skill)
-  ensure
-    Agent.checkin(agent.id) if agent
+    add_call_to_queue(lang, skill)
+
     hangup
   end
 
@@ -54,28 +53,30 @@ class DefaultContext < Adhearsion::CallController
 
   def add_call_to_queue(lang, skill)
     status = nil
+
     while !status || status.result != :answer do
       play 'wimdu/en_thank_you_you_will' unless status
 
       agent  = get_next_agent_for(lang, skill)
       status = dial "SIP/#{agent.name}", for: 15.seconds
+      Agent.checkin(agent.id)
     end
-    agent
   end
 
 
   def get_next_agent_for(lang, skill)
     agent = nil
+
     while !agent do
       sleep 1
 
       agent = AGENT_MUTEX.synchronize {
-        agent_id = Agent.where(
-          languages: lang, skills: skill
-        ).sort_by_idle_time.first
+        agent_id = Agent.where(languages: lang, skills: skill)
+                        .sort_by_idle_time.first
         Agent.checkout(agent_id)
       }
     end
+
     agent
   end
 end
