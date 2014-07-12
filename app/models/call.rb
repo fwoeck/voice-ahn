@@ -59,6 +59,19 @@ class Call
   end
 
 
+  def self.execute_command_with(data)
+    cid  = data['call_id']
+    call = Adhearsion.active_calls.values.find { |c| c.id == cid }
+
+    # TODO We need to implement call transfers too:
+    #
+    if call
+      call.pause_controllers
+      call.hangup
+    end
+  end
+
+
   def self.set_language_for(tcid, lang, queue_call=false)
     call = find(tcid)
     call.queued_at = current_time if queue_call

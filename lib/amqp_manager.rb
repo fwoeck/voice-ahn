@@ -48,10 +48,16 @@ module AmqpManager
 
     def start
       establish_connection
-
       ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
+
       ahn_queue.subscribe { |delivery_info, metadata, payload|
-        Agent.update_agent_state_with(payload)
+        data = JSON.parse(payload)
+
+        if data['user_id']
+          Agent.update_agent_state_with(data)
+        elsif data['call_id']
+          Call.execute_command_with(data)
+        end
       }
     end
   end

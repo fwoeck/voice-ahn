@@ -95,8 +95,8 @@ class Agent
     end
 
 
-    def update_agent_state_with(payload)
-      uid, key, value = get_key_value_pair(payload)
+    def update_agent_state_with(data)
+      uid, key, value = gat_agent_value_pair(data)
 
       if uid > 0 && key
         setter = "#{key}#{key[/y\z/] ? '' : 's'}="
@@ -126,25 +126,16 @@ class Agent
 
     # TODO We should use real Agent instances here:
     #
-    def get_key_value_pair(payload)
-      data  = parsed_json(payload)
-      uid   = data.delete('user_id').to_i
-      key   = data.keys.first
+    def gat_agent_value_pair(data)
+      uid = data.delete('user_id').to_i
+      key = data.keys.first
 
       [uid, key, data[key]]
     end
 
 
-    def parsed_json(payload)
-      data = JSON.parse(payload)
-      assert data.keys.include?('user_id'), payload
-      assert data.keys.count == 2, payload
-      data
-    end
-
-
-    def assert(value, payload)
-      raise "Received invalid options: #{payload}" if !value
+    def assert(value, data)
+      raise "Received invalid options: #{data}" if !value
     end
   end
 end
