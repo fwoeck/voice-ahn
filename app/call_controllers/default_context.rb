@@ -19,7 +19,7 @@ class DefaultContext < Adhearsion::CallController
 
     hangup
   ensure
-    Agent.checkin(@agent.id) if @agent
+    checkin_agent
   end
 
 
@@ -62,8 +62,15 @@ class DefaultContext < Adhearsion::CallController
       @agent = get_next_agent_for(lang, skill)
       status = dial "SIP/#{@agent.name}", for: 15.seconds
 
+      checkin_agent
+    end
+  end
+
+
+  def checkin_agent
+    Thread.new do
       sleep 5
-      Agent.checkin(@agent.id)
+      Agent.checkin(@agent.id) if @agent
     end
   end
 
