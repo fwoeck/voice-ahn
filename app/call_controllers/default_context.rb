@@ -18,6 +18,8 @@ class DefaultContext < Adhearsion::CallController
     add_call_to_queue(lang, skill)
 
     hangup
+  ensure
+    Agent.checkin(@agent.id) if @agent
   end
 
 
@@ -57,14 +59,11 @@ class DefaultContext < Adhearsion::CallController
     while !status || status.result != :answer do
       play 'wimdu/en_thank_you_you_will' unless status
 
-      agent  = get_next_agent_for(lang, skill)
-      status = dial "SIP/#{agent.name}", for: 15.seconds
+      @agent = get_next_agent_for(lang, skill)
+      status = dial "SIP/#{@agent.name}", for: 15.seconds
 
-      # FIXME We have to make sure, agents are checked-in
-      #       again under any circumstances:
-      #
       sleep 5
-      Agent.checkin(agent.id)
+      Agent.checkin(@agent.id)
     end
   end
 
