@@ -5,117 +5,119 @@
 say --voice=Heather --output-file=en_welcome_to_wimdu.aiff "Welcome to wimdoo!"
 say --voice=Sarah   --output-file=de_welcome_to_wimdu.aiff "Willkommen bei Wimduu!"
 
-sox en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 en_welcome_to_wimdu.sln32
-sox de_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 de_welcome_to_wimdu.sln32
+sox --norm=-3 en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 en_welcome_to_wimdu.sln32 dither -s
+sox --norm=-3 de_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 de_welcome_to_wimdu.sln32 dither -s
 
-sox en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 es_welcome_to_wimdu.sln32
-sox en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 fr_welcome_to_wimdu.sln32
-sox en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 it_welcome_to_wimdu.sln32
+sox --norm=-3 en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 es_welcome_to_wimdu.sln32 dither -s
+sox --norm=-3 en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 fr_welcome_to_wimdu.sln32 dither -s
+sox --norm=-3 en_welcome_to_wimdu.aiff -t raw -b 16 -r 32000 it_welcome_to_wimdu.sln32 dither -s
 
 
 # choose_a_language
 say --voice=Heather --output-file=en_choose_a_language.aiff "Please press a key, if you need international language support. Choose 1 for german, 2 for english, 3 for spanish, 4 for french and 5 for italian speakers."
 say --voice=Sarah   --output-file=de_choose_a_language.aiff "Drücken Sie eine Taste, wenn Sie Hilfe in anderen Sprachen benötigen. Wählen Sie 1 für deutsch, 2 für englisch, 3 für spanisch, 4 für französisch und 5 für italienisch."
 
-sox en_choose_a_language.aiff -t raw -b 16 -r 32000 en_choose_a_language.sln32
-sox de_choose_a_language.aiff -t raw -b 16 -r 32000 de_choose_a_language.sln32
+sox --norm=-3 en_choose_a_language.aiff -t raw -b 16 -r 32000 en_choose_a_language.sln32 dither -s
+sox --norm=-3 de_choose_a_language.aiff -t raw -b 16 -r 32000 de_choose_a_language.sln32 dither -s
 
-sox en_choose_a_language.aiff -t raw -b 16 -r 32000 es_choose_a_language.sln32
-sox en_choose_a_language.aiff -t raw -b 16 -r 32000 fr_choose_a_language.sln32
-sox en_choose_a_language.aiff -t raw -b 16 -r 32000 it_choose_a_language.sln32
+sox --norm=-3 en_choose_a_language.aiff -t raw -b 16 -r 32000 es_choose_a_language.sln32 dither -s
+sox --norm=-3 en_choose_a_language.aiff -t raw -b 16 -r 32000 fr_choose_a_language.sln32 dither -s
+sox --norm=-3 en_choose_a_language.aiff -t raw -b 16 -r 32000 it_choose_a_language.sln32 dither -s
 
 
 # thank_you
 say --voice=Heather --output-file=en_thank_you.aiff "Thank you!"
 say --voice=Sarah   --output-file=de_thank_you.aiff "Vielen Dank!"
 
-sox en_thank_you.aiff -t raw -b 16 -r 32000 en_thank_you.sln32
-sox de_thank_you.aiff -t raw -b 16 -r 32000 de_thank_you.sln32
+sox --norm=-3 en_thank_you.aiff -t raw -b 16 -r 32000 en_thank_you.sln32 dither -s
+sox --norm=-3 de_thank_you.aiff -t raw -b 16 -r 32000 de_thank_you.sln32 dither -s
 
-sox en_thank_you.aiff -t raw -b 16 -r 32000 es_thank_you.sln32
-sox en_thank_you.aiff -t raw -b 16 -r 32000 fr_thank_you.sln32
-sox en_thank_you.aiff -t raw -b 16 -r 32000 it_thank_you.sln32
+sox --norm=-3 en_thank_you.aiff -t raw -b 16 -r 32000 es_thank_you.sln32 dither -s
+sox --norm=-3 en_thank_you.aiff -t raw -b 16 -r 32000 fr_thank_you.sln32 dither -s
+sox --norm=-3 en_thank_you.aiff -t raw -b 16 -r 32000 it_thank_you.sln32 dither -s
 
 
 # how_can_we_help_you
 say --voice=Heather --output-file=en_how_can_we_help_you.aiff "Ok, now how can we help you."
 say --voice=Sarah   --output-file=de_how_can_we_help_you.aiff "Gut, wie können wir Ihnen helfen."
 
-sox en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 en_how_can_we_help_you.sln32
-sox de_how_can_we_help_you.aiff -t raw -b 16 -r 32000 de_how_can_we_help_you.sln32
+sox --norm=-3 en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 en_how_can_we_help_you.sln32 dither -s
+sox --norm=-3 de_how_can_we_help_you.aiff -t raw -b 16 -r 32000 de_how_can_we_help_you.sln32 dither -s
 
-sox en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 es_how_can_we_help_you.sln32
-sox en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 fr_how_can_we_help_you.sln32
-sox en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 it_how_can_we_help_you.sln32
+sox --norm=-3 en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 es_how_can_we_help_you.sln32 dither -s
+sox --norm=-3 en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 fr_how_can_we_help_you.sln32 dither -s
+sox --norm=-3 en_how_can_we_help_you.aiff -t raw -b 16 -r 32000 it_how_can_we_help_you.sln32 dither -s
 
 
 # i_didnt_understand
 say --voice=Heather --output-file=en_i_didnt_understand.aiff "Sorry, I didn't understand you."
 say --voice=Sarah   --output-file=de_i_didnt_understand.aiff "Leider habe ich Sie nicht verstanden."
 
-sox en_i_didnt_understand.aiff -t raw -b 16 -r 32000 en_i_didnt_understand.sln32
-sox de_i_didnt_understand.aiff -t raw -b 16 -r 32000 de_i_didnt_understand.sln32
+sox --norm=-3 en_i_didnt_understand.aiff -t raw -b 16 -r 32000 en_i_didnt_understand.sln32 dither -s
+sox --norm=-3 de_i_didnt_understand.aiff -t raw -b 16 -r 32000 de_i_didnt_understand.sln32 dither -s
 
-sox en_i_didnt_understand.aiff -t raw -b 16 -r 32000 es_i_didnt_understand.sln32
-sox en_i_didnt_understand.aiff -t raw -b 16 -r 32000 fr_i_didnt_understand.sln32
-sox en_i_didnt_understand.aiff -t raw -b 16 -r 32000 it_i_didnt_understand.sln32
+sox --norm=-3 en_i_didnt_understand.aiff -t raw -b 16 -r 32000 es_i_didnt_understand.sln32 dither -s
+sox --norm=-3 en_i_didnt_understand.aiff -t raw -b 16 -r 32000 fr_i_didnt_understand.sln32 dither -s
+sox --norm=-3 en_i_didnt_understand.aiff -t raw -b 16 -r 32000 it_i_didnt_understand.sln32 dither -s
 
 
 # choose_a_skill
 say --voice=Heather --output-file=en_choose_a_skill.aiff "Press 1 for help on new bookings, 2 for your existing booking, 3 on questions about invoices or payments and 4 for all other inquiries."
 say --voice=Sarah   --output-file=de_choose_a_skill.aiff "Wählen Sie 1 für eine neue Buchung, 2 bei einer bestehenden Buchung, 3 für Rechnungs- und Zahlungsfragen und 4 für alle anderen Anliegen."
 
-sox en_choose_a_skill.aiff -t raw -b 16 -r 32000 en_choose_a_skill.sln32
-sox de_choose_a_skill.aiff -t raw -b 16 -r 32000 de_choose_a_skill.sln32
+sox --norm=-3 en_choose_a_skill.aiff -t raw -b 16 -r 32000 en_choose_a_skill.sln32 dither -s
+sox --norm=-3 de_choose_a_skill.aiff -t raw -b 16 -r 32000 de_choose_a_skill.sln32 dither -s
 
-sox en_choose_a_skill.aiff -t raw -b 16 -r 32000 es_choose_a_skill.sln32
-sox en_choose_a_skill.aiff -t raw -b 16 -r 32000 fr_choose_a_skill.sln32
-sox en_choose_a_skill.aiff -t raw -b 16 -r 32000 it_choose_a_skill.sln32
+sox --norm=-3 en_choose_a_skill.aiff -t raw -b 16 -r 32000 es_choose_a_skill.sln32 dither -s
+sox --norm=-3 en_choose_a_skill.aiff -t raw -b 16 -r 32000 fr_choose_a_skill.sln32 dither -s
+sox --norm=-3 en_choose_a_skill.aiff -t raw -b 16 -r 32000 it_choose_a_skill.sln32 dither -s
 
 
 # you_will_be_connected
 say --voice=Heather --output-file=en_you_will_be_connected.aiff "Thank you! You will be connected to the next available operator."
 say --voice=Sarah   --output-file=de_you_will_be_connected.aiff "Vielen Dank! Sie werden nun mit dem nächsten freien Mitarbeiter verbunden."
 
-sox en_you_will_be_connected.aiff -t raw -b 16 -r 32000 en_you_will_be_connected.sln32
-sox de_you_will_be_connected.aiff -t raw -b 16 -r 32000 de_you_will_be_connected.sln32
+sox --norm=-3 en_you_will_be_connected.aiff -t raw -b 16 -r 32000 en_you_will_be_connected.sln32 dither -s
+sox --norm=-3 de_you_will_be_connected.aiff -t raw -b 16 -r 32000 de_you_will_be_connected.sln32 dither -s
 
-sox en_you_will_be_connected.aiff -t raw -b 16 -r 32000 es_you_will_be_connected.sln32
-sox en_you_will_be_connected.aiff -t raw -b 16 -r 32000 fr_you_will_be_connected.sln32
-sox en_you_will_be_connected.aiff -t raw -b 16 -r 32000 it_you_will_be_connected.sln32
+sox --norm=-3 en_you_will_be_connected.aiff -t raw -b 16 -r 32000 es_you_will_be_connected.sln32 dither -s
+sox --norm=-3 en_you_will_be_connected.aiff -t raw -b 16 -r 32000 fr_you_will_be_connected.sln32 dither -s
+sox --norm=-3 en_you_will_be_connected.aiff -t raw -b 16 -r 32000 it_you_will_be_connected.sln32 dither -s
 
 
 # leave_a_message
 say --voice=Heather --output-file=en_leave_a_message.aiff "Sorry, no operator is available at this time. Please leave us a message and we will contact you shortly."
 say --voice=Sarah   --output-file=de_leave_a_message.aiff "Leider ist derzeit kein Mitarbeiter verfügbar. Bitte hinterlassen Sie uns eine Nachricht und wir rufen umgehend zurück."
 
-sox en_leave_a_message.aiff -t raw -b 16 -r 32000 en_leave_a_message.sln32
-sox de_leave_a_message.aiff -t raw -b 16 -r 32000 de_leave_a_message.sln32
+sox --norm=-3 en_leave_a_message.aiff -t raw -b 16 -r 32000 en_leave_a_message.sln32 dither -s
+sox --norm=-3 de_leave_a_message.aiff -t raw -b 16 -r 32000 de_leave_a_message.sln32 dither -s
 
-sox en_leave_a_message.aiff -t raw -b 16 -r 32000 es_leave_a_message.sln32
-sox en_leave_a_message.aiff -t raw -b 16 -r 32000 fr_leave_a_message.sln32
-sox en_leave_a_message.aiff -t raw -b 16 -r 32000 it_leave_a_message.sln32
+sox --norm=-3 en_leave_a_message.aiff -t raw -b 16 -r 32000 es_leave_a_message.sln32 dither -s
+sox --norm=-3 en_leave_a_message.aiff -t raw -b 16 -r 32000 fr_leave_a_message.sln32 dither -s
+sox --norm=-3 en_leave_a_message.aiff -t raw -b 16 -r 32000 it_leave_a_message.sln32 dither -s
 
 
 # bye_bye
 say --voice=Heather --output-file=en_bye_bye.aiff "Thank you for calling and welcome back soon!"
 say --voice=Sarah   --output-file=de_bye_bye.aiff "Vielen Dank für Ihren Anruf und bis zum nächsten Mal!"
 
-sox en_bye_bye.aiff -t raw -b 16 -r 32000 en_bye_bye.sln32
-sox de_bye_bye.aiff -t raw -b 16 -r 32000 de_bye_bye.sln32
+sox --norm=-3 en_bye_bye.aiff -t raw -b 16 -r 32000 en_bye_bye.sln32 dither -s
+sox --norm=-3 de_bye_bye.aiff -t raw -b 16 -r 32000 de_bye_bye.sln32 dither -s
 
-sox en_bye_bye.aiff -t raw -b 16 -r 32000 es_bye_bye.sln32
-sox en_bye_bye.aiff -t raw -b 16 -r 32000 fr_bye_bye.sln32
-sox en_bye_bye.aiff -t raw -b 16 -r 32000 it_bye_bye.sln32
+sox --norm=-3 en_bye_bye.aiff -t raw -b 16 -r 32000 es_bye_bye.sln32 dither -s
+sox --norm=-3 en_bye_bye.aiff -t raw -b 16 -r 32000 fr_bye_bye.sln32 dither -s
+sox --norm=-3 en_bye_bye.aiff -t raw -b 16 -r 32000 it_bye_bye.sln32 dither -s
 
 
 # please_stand_by
 say --voice=Heather --output-file=en_please_stand_by.aiff "Please stand by."
 say --voice=Sarah   --output-file=de_please_stand_by.aiff "Bitte haben Sie etwas Geduld."
 
-sox en_please_stand_by.aiff -t raw -b 16 -r 32000 en_please_stand_by.sln32
-sox de_please_stand_by.aiff -t raw -b 16 -r 32000 de_please_stand_by.sln32
+sox --norm=-3 en_please_stand_by.aiff -t raw -b 16 -r 32000 en_please_stand_by.sln32 dither -s
+sox --norm=-3 de_please_stand_by.aiff -t raw -b 16 -r 32000 de_please_stand_by.sln32 dither -s
 
-sox en_please_stand_by.aiff -t raw -b 16 -r 32000 es_please_stand_by.sln32
-sox en_please_stand_by.aiff -t raw -b 16 -r 32000 fr_please_stand_by.sln32
-sox en_please_stand_by.aiff -t raw -b 16 -r 32000 it_please_stand_by.sln32
+sox --norm=-3 en_please_stand_by.aiff -t raw -b 16 -r 32000 es_please_stand_by.sln32 dither -s
+sox --norm=-3 en_please_stand_by.aiff -t raw -b 16 -r 32000 fr_please_stand_by.sln32 dither -s
+sox --norm=-3 en_please_stand_by.aiff -t raw -b 16 -r 32000 it_please_stand_by.sln32 dither -s
+
+rm *.aiff
