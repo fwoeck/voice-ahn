@@ -38,8 +38,13 @@ class Agent
     def update_state_for(agent, status)
       return unless agent && status
 
-      agent.agent_state = status
-      $redis.set(agent_state_keyname(agent), status)
+      if agent.agent_state != status
+        agent.agent_state = status
+        $redis.set(agent_state_keyname(agent), status)
+        return true
+      end
+
+      false
     end
 
 
