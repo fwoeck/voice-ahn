@@ -5,6 +5,9 @@ QueueStruct = Struct.new(:queue, :lang, :skill, :queued_at, :answered)
 
 class DefaultContext < Adhearsion::CallController
 
+  after_call :clear_agent
+
+
   def run
     answer
     play 'wimdu/en_welcome_to_wimdu'
@@ -75,13 +78,13 @@ class DefaultContext < Adhearsion::CallController
     while !status || status.result != :answer do
       play "wimdu/#{lang}_you_will_be_connected" unless status
 
-      @agent = wait_for_next_agent_on(qstruct)
-      status = dial "SIP/#{@agent.name}", for: 15.seconds
-
-      clear_agent
+      begin
+        @agent = wait_for_next_agent_on(qstruct)
+        status = dial "SIP/#{@agent.name}", for: 15.seconds
+      ensure
+        clear_agent
+      end
     end
-  ensure
-    clear_agent
   end
 
 
