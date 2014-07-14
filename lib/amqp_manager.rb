@@ -66,7 +66,7 @@ module AmqpManager
         data = JSON.parse(payload)
 
         if data['user_id']
-          Agent.update_agent_state_with(data)
+          Agent.update_client_settings_with(data)
         elsif data['call_id']
           Call.execute_command_with(data)
         end
