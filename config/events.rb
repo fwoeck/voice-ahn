@@ -4,9 +4,11 @@ Adhearsion::Events.draw do
   #   puts event
   # end
 
+
   ami name: 'Bridge' do |event|
     AmqpManager.numbers_publish(event)
   end
+
 
   ami name: 'BridgeExec' do |event|
     if event.headers['Response'] == 'Success'
@@ -22,14 +24,17 @@ Adhearsion::Events.draw do
     old_state = agent ? agent.agent_state : nil
     new_state = event.headers['PeerStatus'].downcase
 
-    Agent.update_state_for(agent, new_state) if old_state && old_state != 'talking'
-    AmqpManager.numbers_publish(event) if old_state != new_state
+    if old_state && old_state != 'talking'
+      Agent.update_state_for(agent, new_state) &&
+        AmqpManager.numbers_publish(event)
+    end
   end
 
 
   ami name: 'NewCallerid' do |event|
     AmqpManager.numbers_publish(event)
   end
+
 
   ami name: 'OriginateResponse' do |event|
     AmqpManager.numbers_publish(event)
@@ -40,8 +45,9 @@ Adhearsion::Events.draw do
     if ['4', '5', '6'].include?(event.headers['ChannelState'])
       Call.update_state_for(event)
 
-      agent = Agent.find_for(event)
-      Agent.update_state_for(agent, 'talking')
+      if agent = Agent.find_for(event)
+        Agent.update_state_for(agent, 'talking')
+      end
     end
 
     AmqpManager.numbers_publish(event)
@@ -52,6 +58,7 @@ Adhearsion::Events.draw do
     AmqpManager.numbers_publish(event)
   end
 
+
   ami name: 'SoftHangupRequest' do |event|
     AmqpManager.numbers_publish(event)
   end
@@ -60,9 +67,9 @@ Adhearsion::Events.draw do
   ami name: 'Hangup' do |event|
     Call.close_state_for(event)
 
-    agent = Agent.find_for(event)
-    Agent.update_state_for(agent, 'registered')
-
-    AmqpManager.numbers_publish(event)
+    if agent = Agent.find_for(event)
+      Agent.update_state_for(agent, 'registered') &&
+        AmqpManager.numbers_publish(event)
+    end
   end
 end
