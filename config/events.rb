@@ -42,15 +42,19 @@ Adhearsion::Events.draw do
 
 
   ami name: 'Newstate' do |event|
+    agent_state = nil
+
     if ['4', '5', '6'].include?(event.headers['ChannelState'])
       Call.update_state_for(event)
-
-      if agent = Agent.find_for(event)
-        Agent.update_state_for(agent, 'talking')
-      end
+      agent_state = 'talking'
+    elsif event.headers['ChannelState'] == '0'
+      agent_state = 'registered'
     end
 
-    AmqpManager.numbers_publish(event)
+    if agent_state && (agent = Agent.find_for event)
+      Agent.update_state_for(agent, agent_state) &&
+        AmqpManager.numbers_publish(event)
+    end
   end
 
 
@@ -59,15 +63,15 @@ Adhearsion::Events.draw do
   end
 
 
-  ami name: 'SoftHangupRequest' do |event|
-    AmqpManager.numbers_publish(event)
-  end
+  # ami name: 'SoftHangupRequest' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
 
 
   ami name: 'Hangup' do |event|
     Call.close_state_for(event)
 
-    if agent = Agent.find_for(event)
+    if (agent = Agent.find_for event)
       Agent.update_state_for(agent, 'registered') &&
         AmqpManager.numbers_publish(event)
     end

@@ -35,11 +35,14 @@ class Agent
     end
 
 
+    # Possible states are "registered", "unregistered" and "talking":
+    #
     def update_state_for(agent, status)
       return unless agent && status
 
       if agent.agent_state != status
         agent.agent_state = status
+        agent.idle_since  = Time.now.utc if status == 'registered'
         $redis.set(agent_state_keyname(agent), status)
         return true
       end
@@ -72,9 +75,9 @@ class Agent
 
 
     def set_availability_scope(hash)
-      hash[:locked]       = :false
-      hash[:agent_state]  = :registered
-      hash[:availability] = :ready
+      hash[:locked]       = 'false'
+      hash[:agent_state]  = 'registered'
+      hash[:availability] = 'ready'
     end
 
 
@@ -100,38 +103,30 @@ class Agent
     end
 
 
-    def update_agent_state_with(data)
-      uid, key, value = gat_agent_value_pair(data)
+    # The redisDB entries have already been set by
+    # rails, so we just have to update our memory model:
+    #
+    def update_client_settings_with(data)
+      uid, key, value = get_agent_value_pair(data)
 
       if uid > 0 && key
         setter = "#{key}#{key[/y\z/] ? '' : 's'}="
-        update_idle_since(key, value, uid)
-        update_status_field(setter, value, uid)
+        update_user_setting(setter, value, uid)
       end
     end
 
 
     # TODO We should use real Agent instances here:
     #
-    def update_status_field(setter, value, uid)
+    def update_user_setting(setter, value, uid)
       Registry[uid].send setter, (value[/,/] ? value.split(',') : value)
-      Adhearsion.logger.info "Update #{uid}'s state: #{setter}'#{value}'"
-    end
-
-
-    # FIXME This doesn't work - we need to take the agent_state
-    #       into account.
-    #
-    def update_idle_since(key, value, uid)
-      if key == 'availability' && value == 'registered'
-        Registry[uid].idle_since = Time.now.utc
-      end
+      Adhearsion.logger.info "Update #{uid}'s setting: #{setter}'#{value}'"
     end
 
 
     # TODO We should use real Agent instances here:
     #
-    def gat_agent_value_pair(data)
+    def get_agent_value_pair(data)
       uid = data.delete('user_id').to_i
       key = data.keys.first
 
