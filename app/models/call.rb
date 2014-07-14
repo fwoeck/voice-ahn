@@ -36,9 +36,9 @@ class Call
   end
 
 
-  def save
+  def save(silently=false)
     $redis.set(Call.key_name(target_id), headers.to_json, ex: 3.hours)
-    publish_to_numbers
+    publish_to_numbers unless silently
   end
 
 
@@ -74,18 +74,27 @@ class Call
   end
 
 
-  def self.set_language_for(tcid, lang, queue_call=false)
+  def self.set_language_for(tcid, lang)
     call = find(tcid)
-    call.queued_at = current_time if queue_call
     call.language = lang
     call.save
   end
 
 
-  def self.set_skill_for(tcid, skill, queue_call=false)
+  def self.set_skill_for(tcid, skill)
     call = find(tcid)
-    call.queued_at = current_time if queue_call
     call.skill = skill
+
+    # ! We can do this silently because :set_queued_at
+    #   is invoked directly hereafter:
+    #
+    call.save(:silently)
+  end
+
+
+  def self.set_queued_at(tcid)
+    call = find(tcid)
+    call.queued_at = current_time
     call.save
   end
 
