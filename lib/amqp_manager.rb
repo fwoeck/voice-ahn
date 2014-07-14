@@ -12,7 +12,19 @@ module AmqpManager
     end
 
     def numbers_publish(payload)
+      sanitize_encoding_for(payload)
       numbers_xchange.publish(payload.to_json, routing_key: 'voice.numbers')
+    end
+
+
+    def sanitize_encoding_for(payload)
+      return unless payload['headers']
+
+      payload['headers'].keys.each do |key|
+        if payload['headers'][key].is_a?(String)
+          payload['headers'][key].force_encoding('UTF-8')
+        end
+      end
     end
 
 

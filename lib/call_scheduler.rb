@@ -4,18 +4,24 @@ require './app/models/call'
 
 module CallScheduler
 
+  @@running = false
+
+
   def self.waiting_calls
     Adhearsion.active_calls.keys.map { |cid|
       Call::Queues[cid]
-    }.compact.select { |c|
-      !c.answered
+    }.compact.select { |qcall|
+      !qcall.answered
     }.sort { |x, y|
-      y.queued_at <=> x.queued_at
+      x.queued_at <=> y.queued_at
     }
   end
 
 
   def self.start
+    return if @@running
+    @@running = true
+
     Thread.new {
       while true do
         sleep 1

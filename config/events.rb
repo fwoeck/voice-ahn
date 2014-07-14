@@ -18,14 +18,12 @@ Adhearsion::Events.draw do
 
 
   ami name: 'PeerStatus' do |event|
-    agent = Agent.find_for(event)
+    agent     = Agent.find_for(event)
+    old_state = agent ? agent.agent_state : nil
+    new_state = event.headers['PeerStatus'].downcase
 
-    if agent && agent.agent_state != 'talking'
-      state = event.headers['PeerStatus'].downcase
-      Agent.update_state_for(agent, state)
-    end
-
-    AmqpManager.numbers_publish(event)
+    Agent.update_state_for(agent, new_state) if old_state && old_state != 'talking'
+    AmqpManager.numbers_publish(event) if old_state != new_state
   end
 
 
