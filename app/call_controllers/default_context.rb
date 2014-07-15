@@ -85,16 +85,15 @@ class DefaultContext < Adhearsion::CallController
 
   def queue_and_handle_call(lang, skill)
     qstruct = get_queue_struct_for(lang, skill)
-    status  = nil
 
-    while !call_was_answered_or_timed_out?(status) do
-      play "wimdu/#{lang}_you_will_be_connected" unless status
+    while !call_was_answered_or_timed_out? do
+      play "wimdu/#{lang}_you_will_be_connected" unless @status
 
       begin
         if @agent = wait_for_next_agent_on(qstruct)
-          status = dial "SIP/#{@agent.name}", for: 15.seconds
+          @status = dial "SIP/#{@agent.name}", for: 15.seconds
         else
-          status = :timeout
+          @status = :timeout
         end
       ensure
         clear_agent
@@ -103,9 +102,9 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
-  def call_was_answered_or_timed_out?(status)
-    return false unless status
-    status == :timeout || status.result == :answered
+  def call_was_answered_or_timed_out?
+    return false unless @status
+    @status == :timeout || @status.result == :answer
   end
 
 
