@@ -7,7 +7,7 @@ QueueStruct = Struct.new(:queue, :lang, :skill, :queued_at, :answered)
 
 class DefaultContext < Adhearsion::CallController
 
-  after_call :clear_agent
+  after_call  :cleanup_after_call
 
 
   def run
@@ -15,31 +15,41 @@ class DefaultContext < Adhearsion::CallController
     play 'wimdu/en_welcome_to_wimdu'
 
     lang = choose_a_language
-    Call.set_language_for(call.id, lang)
+    Call.set_language_for(call_id, lang)
 
     sleep 1
     play "wimdu/#{lang}_how_can_we_help_you"
 
     skill = choose_a_skill(lang)
-    Call.set_skill_for(call.id, skill)
+    Call.set_skill_for(call_id, skill)
 
-    Call.set_queued_at(call.id)
+    Call.set_queued_at(call_id)
     queue_and_handle_call(lang, skill)
 
-    remove_call_from_queue
     hangup
   end
 
 
+  def call_id
+    @memo_call_id ||= call.id
+  end
+
+
   def get_queue_struct_for(lang, skill)
-    Call::Queues[call.id] ||= QueueStruct.new(
+    Call::Queues[call_id] ||= QueueStruct.new(
       Queue.new, lang, skill, Time.now.utc, false
     )
   end
 
 
   def remove_call_from_queue
-    Call::Queues.delete call.id
+    Call::Queues.delete call_id
+  end
+
+
+  def cleanup_after_call
+    remove_call_from_queue
+    clear_agent
   end
 
 
@@ -84,7 +94,7 @@ class DefaultContext < Adhearsion::CallController
 
 
   def queue_and_handle_call(lang, skill)
-    qstruct = get_queue_struct_for(lang, skill)
+    qstruct  = get_queue_struct_for(lang, skill)
 
     while !call_was_answered_or_timed_out? do
       play "wimdu/#{lang}_you_will_be_connected" unless @status
