@@ -1,4 +1,6 @@
 require 'thread'
+require 'timeout'
+
 
 QueueStruct = Struct.new(:queue, :lang, :skill, :queued_at, :answered)
 
@@ -15,7 +17,7 @@ class DefaultContext < Adhearsion::CallController
     lang = choose_a_language
     Call.set_language_for(call.id, lang)
 
-    play "wimdu/#{lang}_thank_you"
+    sleep 1
     play "wimdu/#{lang}_how_can_we_help_you"
 
     skill = choose_a_skill(lang)
@@ -57,9 +59,13 @@ class DefaultContext < Adhearsion::CallController
 
   def choose_a_skill(lang)
     input = nil
-    while !input || !['1', '2', '3', '4'].include?(input.utterance) do
+    tries = 0
+
+    while tries < 3 && !user_entered_skill?(tries, input) do
       play "wimdu/#{lang}_i_didnt_understand" if input
-      input = ask "wimdu/#{lang}_choose_a_skill", timeout: 5, limit: 1
+
+      input  = ask "wimdu/#{lang}_choose_a_skill", timeout: 5, limit: 1
+      tries += 1
     end
 
     case input.utterance
@@ -67,24 +73,38 @@ class DefaultContext < Adhearsion::CallController
       when '2'; 'ext_booking'
       when '3'; 'payment'
       when '4'; 'other'
+      else 'other'
     end
+  end
+
+
+  def user_entered_skill?(tries, input)
+    input && ['1', '2', '3', '4'].include?(input.utterance)
   end
 
 
   def queue_and_handle_call(lang, skill)
     qstruct = get_queue_struct_for(lang, skill)
-    status  = nil
 
-    while !status || status.result != :answer do
-      play "wimdu/#{lang}_you_will_be_connected" unless status
+    while !call_was_answered_or_timed_out? do
+      play "wimdu/#{lang}_you_will_be_connected" unless @status
 
       begin
-        @agent = wait_for_next_agent_on(qstruct)
-        status = dial "SIP/#{@agent.name}", for: 15.seconds
+        if @agent = wait_for_next_agent_on(qstruct)
+          @status = dial "SIP/#{@agent.name}", for: 15.seconds
+        else
+          @status = :timeout
+        end
       ensure
         clear_agent
       end
     end
+  end
+
+
+  def call_was_answered_or_timed_out?
+    return false unless @status
+    @status == :timeout || @status.result == :answer
   end
 
 
@@ -105,10 +125,14 @@ class DefaultContext < Adhearsion::CallController
 
 
   def wait_for_next_agent_on(qstruct)
-    qstruct.answered = false
-    agent = qstruct.queue.pop
-    qstruct.answered = true
+    Timeout::timeout(60) {
+      qstruct.answered = false
+      agent = qstruct.queue.pop
+      qstruct.answered = true
 
-    agent
+      agent
+    }
+  rescue
+    false
   end
 end

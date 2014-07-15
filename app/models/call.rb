@@ -85,8 +85,8 @@ class Call
     call = find(tcid)
     call.skill = skill
 
-    # ! We can do this silently because :set_queued_at
-    #   is invoked directly hereafter:
+    # We can do this silently only because
+    # set_queued_at is invoked directly here after:
     #
     call.save(:silently)
   end
@@ -105,18 +105,18 @@ class Call
     fields = JSON.parse entry
 
     par = {
+      target_id:     tcid,
+      skill:         fields['Skill'],
+      hungup:        fields['Hungup'],
+      hungup_at:     fields['HungupAt'],
       called_at:     fields['CalledAt'],
       caller_id:     fields['CallerId'],
       channel1:      fields['Channel1'],
       channel2:      fields['Channel2'],
-      dispatched_at: fields['DispatchedAt'],
-      hungup:        fields['Hungup'],
-      hungup_at:     fields['HungupAt'],
-      initiator:     fields['Initiator'],
       language:      fields['Language'],
       queued_at:     fields['QueuedAt'],
-      skill:         fields['Skill'],
-      target_id:     tcid
+      initiator:     fields['Initiator'],
+      dispatched_at: fields['DispatchedAt']
     }
 
     new(par)

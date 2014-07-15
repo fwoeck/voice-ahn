@@ -7,6 +7,7 @@ Bundler.setup
 require 'adhearsion'
 require 'active_support/all'
 
+
 Time.zone = 'Etc/UTC'
 WimConfig = YAML.load_file('./config/app.yml')
 WimConfig.keys.each { |key|
