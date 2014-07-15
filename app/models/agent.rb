@@ -10,9 +10,6 @@ class Agent
   class << self
 
 
-    # FIXME This won't work for external callers, where
-    #       "Peer" doesn't match 3 digits:
-    #
     def get_peer_from(event)
       peer = event.headers['Peer'] || event.headers['Channel']
       peer[ChannelRegex, 1] if peer
@@ -103,8 +100,8 @@ class Agent
     end
 
 
-    # The redisDB entries have already been set by
-    # rails, so we just have to update our memory model:
+    # The redisDB entries have already been set by VR,
+    # so we just have to update our memory model:
     #
     def update_client_settings_with(data)
       uid, key, value = get_agent_value_pair(data)

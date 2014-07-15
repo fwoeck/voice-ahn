@@ -15,7 +15,6 @@ class DefaultContext < Adhearsion::CallController
     lang = choose_a_language
     Call.set_language_for(call.id, lang)
 
-    play "wimdu/#{lang}_thank_you"
     play "wimdu/#{lang}_how_can_we_help_you"
 
     skill = choose_a_skill(lang)
