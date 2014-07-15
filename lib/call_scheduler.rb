@@ -18,6 +18,16 @@ module CallScheduler
   end
 
 
+  def self.schedule_calls_to_agents
+    waiting_calls.each { |call|
+      agent_id = Agent.where(languages: call.lang, skills: call.skill).sort_by_idle_time.first
+      agent    = Agent.checkout(agent_id)
+
+      call.queue.push(agent) if agent
+    }
+  end
+
+
   def self.start
     return if @@running
     @@running = true
@@ -25,13 +35,7 @@ module CallScheduler
     Thread.new {
       while true do
         sleep 1
-
-        waiting_calls.each { |call|
-          agent_id = Agent.where(languages: call.lang, skills: call.skill).sort_by_idle_time.first
-          agent    = Agent.checkout(agent_id)
-
-          call.queue.push(agent) if agent
-        }
+        schedule_calls_to_agents
       end
     }
   end
