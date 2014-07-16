@@ -1,14 +1,5 @@
 Adhearsion::Events.draw do
 
-  # punchblock do |event|
-  #   puts event
-  # end
-
-
-  # ami name: 'Bridge' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
 
   ami name: 'BridgeExec' do |event|
     if event.headers['Response'] == 'Success'
@@ -31,16 +22,6 @@ Adhearsion::Events.draw do
   end
 
 
-  # ami name: 'NewCallerid' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
-
-  # ami name: 'OriginateResponse' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
-
   ami name: 'Newstate' do |event|
     agent_state = nil
 
@@ -58,16 +39,6 @@ Adhearsion::Events.draw do
   end
 
 
-  # ami name: 'Newchannel' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
-
-  # ami name: 'SoftHangupRequest' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
-
   ami name: 'Hangup' do |event|
     Call.close_state_for(event)
 
@@ -76,4 +47,29 @@ Adhearsion::Events.draw do
         AmqpManager.numbers_publish(event)
     end
   end
+
+
+  # punchblock do |event|
+  #   puts event
+  # end
+
+  # ami name: 'Bridge' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'NewCallerid' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'OriginateResponse' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'Newchannel' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'SoftHangupRequest' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
 end

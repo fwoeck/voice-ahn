@@ -7,7 +7,7 @@ QueueStruct = Struct.new(:queue, :lang, :skill, :queued_at, :answered)
 
 class DefaultContext < Adhearsion::CallController
 
-  after_call  :cleanup_after_call
+  after_call :remove_call_from_queue
 
 
   def run
@@ -31,7 +31,7 @@ class DefaultContext < Adhearsion::CallController
 
 
   def call_id
-    @memo_call_id ||= call.id
+    @call_id ||= call.id
   end
 
 
@@ -44,12 +44,7 @@ class DefaultContext < Adhearsion::CallController
 
   def remove_call_from_queue
     Call::Queues.delete call_id
-  end
-
-
-  def cleanup_after_call
-    remove_call_from_queue
-    clear_agent
+    @call_id = nil
   end
 
 
@@ -94,43 +89,26 @@ class DefaultContext < Adhearsion::CallController
 
 
   def queue_and_handle_call(lang, skill)
-    qstruct  = get_queue_struct_for(lang, skill)
+    qstruct = get_queue_struct_for(lang, skill)
+    status  = nil
 
-    while !call_was_answered_or_timed_out? do
-      play "wimdu/#{lang}_you_will_be_connected" unless @status
+    while !call_was_answered_or_timed_out?(status) do
+      play "wimdu/#{lang}_you_will_be_connected" unless status
 
-      begin
-        if @agent = wait_for_next_agent_on(qstruct)
-          @status = dial "SIP/#{@agent.name}", for: 15.seconds
-        else
-          @status = :timeout
-        end
-      ensure
-        clear_agent
+      if agent = wait_for_next_agent_on(qstruct)
+        puts ">>> dial #{agent.id}"
+        status = dial "SIP/#{agent.name}", for: 15.seconds
+        puts ">>> close call #{agent.id}"
+      else
+        status = :timeout
       end
     end
   end
 
 
-  def call_was_answered_or_timed_out?
-    return false unless @status
-    @status == :timeout || @status.result == :answer
-  end
-
-
-  def clear_agent
-    checkin_agent(@agent)
-    @agent = nil
-  end
-
-
-  def checkin_agent(agent)
-    if agent
-      Thread.new {
-        sleep 5
-        Agent.checkin(agent.id)
-      }
-    end
+  def call_was_answered_or_timed_out?(status)
+    return false unless status
+    status == :timeout || status.result == :answer
   end
 
 
@@ -138,6 +116,7 @@ class DefaultContext < Adhearsion::CallController
     Timeout::timeout(60) {
       qstruct.answered = false
       agent = qstruct.queue.pop
+      puts ">>> popped #{agent.id}"
       qstruct.answered = true
 
       agent

@@ -10,6 +10,11 @@ class Agent
   class << self
 
 
+    def all_ids
+      Registry.keys.uniq
+    end
+
+
     def get_peer_from(event)
       peer = event.headers['Peer'] || event.headers['Channel']
       peer[ChannelRegex, 1] if peer
@@ -38,8 +43,7 @@ class Agent
       return unless agent && status
 
       if agent.agent_state != status
-        agent.agent_state = status
-        agent.idle_since  = Time.now.utc if status == 'registered'
+        update_internal_model(agent, status)
         $redis.set(agent_state_keyname(agent), status)
         return true
       end
@@ -48,17 +52,46 @@ class Agent
     end
 
 
+    def update_internal_model(agent, status)
+      agent.agent_state = status
+
+      if status == 'registered'
+        agent.idle_since = Time.now.utc
+        checkin_agent(agent.id)
+      end
+    end
+
+
+    def checkin_agent(agent_id)
+      puts ">>> want to checkin #{agent_id}"
+      Thread.new {
+        sleep 3
+        checkin(agent_id)
+      }
+    end
+
+
     def checkout(agent_id)
+      return false unless agent_id
       agent = Registry[agent_id]
-      agent.locked = 'true' if agent
+
+      return false if agent.locked == 'true'
+      agent.locked = 'true'
+
+      puts ">>> checkout #{agent_id}"
       agent
     end
 
 
     def checkin(agent_id)
       agent = Registry[agent_id]
-      agent.locked = 'false' if agent
-      agent
+      puts ">>> checkin failed not agent for #{agent_id}" unless agent
+      if agent.locked == 'true'
+        puts ">>> checkin #{agent_id}"
+        agent.locked = 'false'
+      else
+        puts ">>> checkin failed #{agent_id}, was: #{agent.locked}"
+      end
     end
 
 
@@ -67,7 +100,7 @@ class Agent
       keys = hash.keys
 
       assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
-      filtered_agent_ids(keys, hash, User.all_ids)
+      filtered_agent_ids(keys, hash)
     end
 
 
@@ -78,13 +111,12 @@ class Agent
     end
 
 
-    def filtered_agent_ids(keys, hash, agent_ids)
-      keys.each do |key|
+    def filtered_agent_ids(keys, hash)
+      keys.inject(all_ids) do |agent_ids, key|
         agent_ids = agent_ids.select { |uid|
           current_key_matches?(hash, key, uid)
         }
       end
-      agent_ids
     end
 
 

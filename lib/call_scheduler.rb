@@ -23,7 +23,11 @@ module CallScheduler
       agent_id = Agent.where(languages: call.lang, skills: call.skill).sort_by_idle_time.first
       agent    = Agent.checkout(agent_id)
 
-      call.queue.push(agent) if agent
+      if agent
+        call.queue.push(agent)
+        puts ">>> pushed #{agent.id}"
+        sleep 0.01
+      end
     }
   end
 
