@@ -1,17 +1,15 @@
+require './app/models/agent_settings'
+
+AgentRegistry = ThreadSafe::Hash.new
+ChannelRegex  = /^SIP.(\d+)/
+
+
 class Agent
-
-  ChannelRegex = /^SIP.(\d+)/
-  Registry     = ThreadSafe::Hash.new
-  State        = Struct.new(
-                   :id, :name, :languages, :skills, :roles, :availability,
-                   :agent_state, :idle_since, :locked
-                 )
-
   class << self
 
 
     def all_ids
-      Registry.keys.uniq
+      AgentRegistry.keys.uniq
     end
 
 
@@ -33,7 +31,7 @@ class Agent
 
     def find_for(event)
       peer = get_peer_from(event)
-      (Agent::Registry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
+      (AgentRegistry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
     end
 
 
@@ -72,7 +70,7 @@ class Agent
 
     def checkout(agent_id)
       return false unless agent_id
-      agent = Registry[agent_id]
+      agent = AgentRegistry[agent_id]
 
       return false if agent.locked == 'true'
       agent.locked = 'true'
@@ -82,7 +80,7 @@ class Agent
 
 
     def checkin(agent_id)
-      agent = Registry[agent_id]
+      agent = AgentRegistry[agent_id]
       agent.locked = 'false'
     end
 
@@ -113,9 +111,9 @@ class Agent
 
 
     def current_key_matches?(hash, key, uid)
-      return false unless Registry[uid]
+      return false unless AgentRegistry[uid]
 
-      value   = Registry[uid].send(key)
+      value   = AgentRegistry[uid].send(key)
       request = hash[key].to_s
 
       value.is_a?(Array) ?
@@ -140,7 +138,7 @@ class Agent
     # TODO We should use real Agent instances here:
     #
     def update_user_setting(setter, value, uid)
-      Registry[uid].send setter, (value[/,/] ? value.split(',') : value)
+      AgentRegistry[uid].send setter, (value[/,/] ? value.split(',') : value)
       Adhearsion.logger.info "Update #{uid}'s setting: #{setter}'#{value}'"
     end
 

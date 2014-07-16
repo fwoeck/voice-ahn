@@ -97,7 +97,7 @@ class DefaultContext < Adhearsion::CallController
       play "wimdu/#{lang}_you_will_be_connected" unless qs.status
 
       if agent = wait_for_next_agent_on(qs)
-        qs.status = dial "SIP/#{agent.name}", for: 15.seconds
+        qs.status = dial "SIP/#{agent.name}", for: (call.from[/SIP.100/] ? 3 : 15).seconds
       else
         qs.status = :timeout
       end
@@ -114,8 +114,9 @@ class DefaultContext < Adhearsion::CallController
   def wait_for_next_agent_on(qs)
     return if qs.tries > 2
     qs.tries += 1
+    timeout   = call.from[/SIP.100/] ? 10 : 60
 
-    Timeout::timeout(60) {
+    Timeout::timeout(timeout) {
       qs.answered = false
       agent = qs.queue.pop
       qs.answered = true
