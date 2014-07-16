@@ -55,7 +55,7 @@ class Agent
     def update_internal_model(agent, status)
       agent.agent_state = status
 
-      if status == 'registered'
+      if status != 'talking'
         agent.idle_since = Time.now.utc
         checkin_agent(agent.id)
       end
@@ -63,7 +63,6 @@ class Agent
 
 
     def checkin_agent(agent_id)
-      puts ">>> want to checkin #{agent_id}"
       Thread.new {
         sleep 3
         checkin(agent_id)
@@ -78,20 +77,13 @@ class Agent
       return false if agent.locked == 'true'
       agent.locked = 'true'
 
-      puts ">>> checkout #{agent_id}"
       agent
     end
 
 
     def checkin(agent_id)
       agent = Registry[agent_id]
-      puts ">>> checkin failed not agent for #{agent_id}" unless agent
-      if agent.locked == 'true'
-        puts ">>> checkin #{agent_id}"
-        agent.locked = 'false'
-      else
-        puts ">>> checkin failed #{agent_id}, was: #{agent.locked}"
-      end
+      agent.locked = 'false'
     end
 
 

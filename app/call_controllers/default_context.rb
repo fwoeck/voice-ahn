@@ -2,7 +2,9 @@ require 'thread'
 require 'timeout'
 
 
-QueueStruct = Struct.new(:queue, :lang, :skill, :queued_at, :answered)
+QueueStruct = Struct.new(
+  :queue, :lang, :skill, :queued_at, :answered, :tries, :status
+)
 
 
 class DefaultContext < Adhearsion::CallController
@@ -37,7 +39,7 @@ class DefaultContext < Adhearsion::CallController
 
   def get_queue_struct_for(lang, skill)
     Call::Queues[call_id] ||= QueueStruct.new(
-      Queue.new, lang, skill, Time.now.utc, false
+      Queue.new, lang, skill, Time.now.utc, false, 0, nil
     )
   end
 
@@ -89,35 +91,34 @@ class DefaultContext < Adhearsion::CallController
 
 
   def queue_and_handle_call(lang, skill)
-    qstruct = get_queue_struct_for(lang, skill)
-    status  = nil
+    qs = get_queue_struct_for(lang, skill)
 
-    while !call_was_answered_or_timed_out?(status) do
-      play "wimdu/#{lang}_you_will_be_connected" unless status
+    while !call_was_answered_or_timed_out?(qs) do
+      play "wimdu/#{lang}_you_will_be_connected" unless qs.status
 
-      if agent = wait_for_next_agent_on(qstruct)
-        puts ">>> dial #{agent.id}"
-        status = dial "SIP/#{agent.name}", for: 15.seconds
-        puts ">>> close call #{agent.id}"
+      if agent = wait_for_next_agent_on(qs)
+        qs.status = dial "SIP/#{agent.name}", for: 15.seconds
       else
-        status = :timeout
+        qs.status = :timeout
       end
     end
   end
 
 
-  def call_was_answered_or_timed_out?(status)
-    return false unless status
-    status == :timeout || status.result == :answer
+  def call_was_answered_or_timed_out?(qs)
+    return false unless qs.status
+    qs.status == :timeout || qs.status.result == :answer
   end
 
 
-  def wait_for_next_agent_on(qstruct)
+  def wait_for_next_agent_on(qs)
+    return if qs.tries > 2
+    qs.tries += 1
+
     Timeout::timeout(60) {
-      qstruct.answered = false
-      agent = qstruct.queue.pop
-      puts ">>> popped #{agent.id}"
-      qstruct.answered = true
+      qs.answered = false
+      agent = qs.queue.pop
+      qs.answered = true
 
       agent
     }

@@ -17,10 +17,3 @@ WimConfig.keys.each { |key|
 
 Bundler.require(:default, Adhearsion.environment)
 $LOAD_PATH.unshift(File.expand_path(File.join(File.dirname(__FILE__), '../app/')))
-
-
-Signal.trap('TERM') do
-  AmqpManager.shutdown
-  Adhearsion::Process.shutdown
-  exit!
-end

@@ -25,7 +25,6 @@ module CallScheduler
 
       if agent
         call.queue.push(agent)
-        puts ">>> pushed #{agent.id}"
         sleep 0.01
       end
     }

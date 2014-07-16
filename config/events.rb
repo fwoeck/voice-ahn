@@ -1,6 +1,14 @@
 Adhearsion::Events.draw do
 
 
+  shutdown do |event|
+    Adhearsion.active_calls.values.each { |call| call.hangup }
+    $redis.keys("#{WimConfig.rails_env}.call.*").each { |key| $redis.del(key) }
+
+    AmqpManager.shutdown
+  end
+
+
   ami name: 'BridgeExec' do |event|
     if event.headers['Response'] == 'Success'
       Call.update_state_for(event)
