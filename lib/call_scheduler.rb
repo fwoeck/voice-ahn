@@ -25,7 +25,7 @@ module CallScheduler
 
       if agent
         call.queue.push(agent)
-        sleep 0.01
+        sleep 0.05
       end
     }
   end

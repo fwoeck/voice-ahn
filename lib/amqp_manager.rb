@@ -1,6 +1,8 @@
 require './app/models/agent'
 
+
 module AmqpManager
+
   class << self
 
     def numbers_channel

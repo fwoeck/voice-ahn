@@ -40,11 +40,14 @@ class Agent
     def update_state_for(agent, status)
       return unless agent && status
 
-      if agent.agent_state != status
+      agent.mutex.synchronize {
         update_internal_model(agent, status)
-        $redis.set(agent_state_keyname(agent), status)
-        return true
-      end
+
+        if agent.agent_state != status
+          $redis.set(agent_state_keyname(agent), status)
+          return true
+        end
+      }
 
       false
     end
@@ -70,11 +73,9 @@ class Agent
 
     def checkout(agent_id)
       return false unless agent_id
+
       agent = AgentRegistry[agent_id]
-
-      return false if agent.locked == 'true'
       agent.locked = 'true'
-
       agent
     end
 

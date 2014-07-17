@@ -3,7 +3,8 @@ require 'timeout'
 
 
 QueueStruct = Struct.new(
-  :queue, :lang, :skill, :queued_at, :answered, :tries, :status
+  :queue, :lang, :skill, :queued_at,
+  :answered, :tries, :status, :agent
 )
 
 
@@ -39,7 +40,7 @@ class DefaultContext < Adhearsion::CallController
 
   def get_queue_struct_for(lang, skill)
     Call::Queues[call_id] ||= QueueStruct.new(
-      Queue.new, lang, skill, Time.now.utc, false, 0, nil
+      Queue.new, lang, skill, Time.now.utc, false, 0, nil, nil
     )
   end
 
@@ -90,18 +91,31 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
+  def dial_timeout
+    call.from[/SIP.100/] ? 3 : 15
+  end
+
+
   def queue_and_handle_call(lang, skill)
-    qs = get_queue_struct_for(lang, skill)
+    qs   = get_queue_struct_for(lang, skill)
 
     while !call_was_answered_or_timed_out?(qs) do
       play "wimdu/#{lang}_you_will_be_connected" unless qs.status
 
-      if agent = wait_for_next_agent_on(qs)
-        qs.status = dial "SIP/#{agent.name}", for: (call.from[/SIP.100/] ? 3 : 15).seconds
-      else
+      begin
+        wait_for_next_agent_on(qs)
+        qs.status = dial "SIP/#{qs.agent.name}", for: dial_timeout.seconds
+      rescue TimeoutError
         qs.status = :timeout
+      ensure
+        checkin_agent(qs)
       end
     end
+  end
+
+
+  def checkin_agent(qs)
+    Agent.update_state_for(qs.agent, 'registered')
   end
 
 
@@ -114,16 +128,13 @@ class DefaultContext < Adhearsion::CallController
   def wait_for_next_agent_on(qs)
     return if qs.tries > 2
     qs.tries += 1
-    timeout   = call.from[/SIP.100/] ? 10 : 60
+    timeout   = 4 * dial_timeout
 
     Timeout::timeout(timeout) {
       qs.answered = false
-      agent = qs.queue.pop
+      qs.agent    = nil
+      qs.agent    = qs.queue.pop
       qs.answered = true
-
-      agent
     }
-  rescue
-    false
   end
 end
