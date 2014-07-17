@@ -4,13 +4,14 @@ require 'timeout'
 
 QueueStruct = Struct.new(
   :queue, :lang, :skill, :queued_at,
-  :answered, :tries, :status, :agent
+  :dispatched, :tries, :status, :agent
 )
 
 
 class DefaultContext < Adhearsion::CallController
 
-  after_call :remove_call_from_queue
+  attr_accessor :qs
+  after_call :cleanup_leftovers
 
 
   def run
@@ -26,10 +27,10 @@ class DefaultContext < Adhearsion::CallController
     skill = choose_a_skill(lang)
     Call.set_skill_for(call_id, skill)
 
+    play "wimdu/#{lang}_you_will_be_connected"
+
     Call.set_queued_at(call_id)
     queue_and_handle_call(lang, skill)
-
-    hangup
   end
 
 
@@ -45,9 +46,9 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
-  def remove_call_from_queue
+  def cleanup_leftovers
     Call::Queues.delete call_id
-    @call_id = nil
+    @call_id = @qs = nil
   end
 
 
@@ -97,41 +98,31 @@ class DefaultContext < Adhearsion::CallController
 
 
   def queue_and_handle_call(lang, skill)
-    qs = get_queue_struct_for(lang, skill)
+    self.qs = get_queue_struct_for(lang, skill)
 
-    while !call_was_answered_or_timed_out?(qs) do
-      play "wimdu/#{lang}_you_will_be_connected" unless qs.status
+    while !call_was_answered_or_timed_out? do
+      qs.dispatched = false
 
       begin
-        wait_for_next_agent_on(qs)
+        wait_for_next_agent_on
         qs.status = dial "SIP/#{qs.agent.name}", for: dial_timeout.seconds
-        checkin_agent(qs)
       rescue TimeoutError
         qs.status = :timeout
-        checkin_agent(qs)
       end
     end
   end
 
 
-  def checkin_agent(qs)
-    Agent.update_state_for(qs.agent, 'registered')
-    qs.agent    = nil
-    qs.answered = false
-  end
-
-
-  def call_was_answered_or_timed_out?(qs)
+  def call_was_answered_or_timed_out?
     return false unless qs.status
     qs.status == :timeout || qs.status.result == :answer
   end
 
 
-  def wait_for_next_agent_on(qs)
+  def wait_for_next_agent_on
     raise TimeoutError if qs.tries > 2
 
     qs.tries += 1
-    qs.agent  = nil
     timeout   = 2 * dial_timeout
 
     Timeout::timeout(timeout) {

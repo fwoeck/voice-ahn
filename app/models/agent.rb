@@ -58,12 +58,11 @@ class Agent
 
       if old_state != new_state
         agent.agent_state = new_state
+        agent.idle_since  = Time.now.utc if old_state == 'talking'
 
-        if old_state == 'talking'
-          agent.idle_since = Time.now.utc
+        if agent.locked == 'true' && new_state != 'talking'
           checkin_agent(agent.id)
         end
-
         return true
       end
     end
