@@ -2,12 +2,16 @@ require 'thread'
 require 'timeout'
 
 
-QueueStruct = Struct.new(:queue, :lang, :skill, :queued_at, :answered)
+QueueStruct = Struct.new(
+  :queue, :lang, :skill, :queued_at,
+  :dispatched, :tries, :status, :agent
+)
 
 
 class DefaultContext < Adhearsion::CallController
 
-  after_call  :cleanup_after_call
+  attr_accessor :qs
+  after_call :cleanup_leftovers
 
 
   def run
@@ -23,33 +27,28 @@ class DefaultContext < Adhearsion::CallController
     skill = choose_a_skill(lang)
     Call.set_skill_for(call_id, skill)
 
+    play "wimdu/#{lang}_you_will_be_connected"
+
     Call.set_queued_at(call_id)
     queue_and_handle_call(lang, skill)
-
-    hangup
   end
 
 
   def call_id
-    @memo_call_id ||= call.id
+    @call_id ||= call.id
   end
 
 
   def get_queue_struct_for(lang, skill)
     Call::Queues[call_id] ||= QueueStruct.new(
-      Queue.new, lang, skill, Time.now.utc, false
+      Queue.new, lang, skill, Time.now.utc, false, 0, nil, nil
     )
   end
 
 
-  def remove_call_from_queue
+  def cleanup_leftovers
     Call::Queues.delete call_id
-  end
-
-
-  def cleanup_after_call
-    remove_call_from_queue
-    clear_agent
+    @call_id = @qs = nil
   end
 
 
@@ -93,56 +92,41 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
+  def dial_timeout
+    call.from[/SIP.100/] ? 5 : 15
+  end
+
+
   def queue_and_handle_call(lang, skill)
-    qstruct  = get_queue_struct_for(lang, skill)
+    self.qs = get_queue_struct_for(lang, skill)
 
     while !call_was_answered_or_timed_out? do
-      play "wimdu/#{lang}_you_will_be_connected" unless @status
+      qs.dispatched = false
 
       begin
-        if @agent = wait_for_next_agent_on(qstruct)
-          @status = dial "SIP/#{@agent.name}", for: 15.seconds
-        else
-          @status = :timeout
-        end
-      ensure
-        clear_agent
+        wait_for_next_agent_on
+        qs.status = dial "SIP/#{qs.agent.name}", for: dial_timeout.seconds
+      rescue TimeoutError
+        qs.status = :timeout
       end
     end
   end
 
 
   def call_was_answered_or_timed_out?
-    return false unless @status
-    @status == :timeout || @status.result == :answer
+    return false unless qs.status
+    qs.status == :timeout || qs.status.result == :answer
   end
 
 
-  def clear_agent
-    checkin_agent(@agent)
-    @agent = nil
-  end
+  def wait_for_next_agent_on
+    raise TimeoutError if qs.tries > 2
 
+    qs.tries += 1
+    timeout   = 2 * dial_timeout
 
-  def checkin_agent(agent)
-    if agent
-      Thread.new {
-        sleep 5
-        Agent.checkin(agent.id)
-      }
-    end
-  end
-
-
-  def wait_for_next_agent_on(qstruct)
-    Timeout::timeout(60) {
-      qstruct.answered = false
-      agent = qstruct.queue.pop
-      qstruct.answered = true
-
-      agent
+    Timeout::timeout(timeout) {
+      qs.agent = qs.queue.pop
     }
-  rescue
-    false
   end
 end

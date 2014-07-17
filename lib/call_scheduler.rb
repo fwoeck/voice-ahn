@@ -10,8 +10,8 @@ module CallScheduler
   def self.waiting_calls
     Adhearsion.active_calls.keys.map { |cid|
       Call::Queues[cid]
-    }.compact.select { |qcall|
-      !qcall.answered
+    }.compact.select { |call|
+      !call.dispatched
     }.sort { |x, y|
       x.queued_at <=> y.queued_at
     }
@@ -23,7 +23,11 @@ module CallScheduler
       agent_id = Agent.where(languages: call.lang, skills: call.skill).sort_by_idle_time.first
       agent    = Agent.checkout(agent_id)
 
-      call.queue.push(agent) if agent
+      if agent
+        call.dispatched = true
+        call.queue.push(agent)
+        sleep 0.05
+      end
     }
   end
 

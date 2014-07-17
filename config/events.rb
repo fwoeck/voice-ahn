@@ -1,13 +1,15 @@
 Adhearsion::Events.draw do
 
-  # punchblock do |event|
-  #   puts event
-  # end
+
+  shutdown do |event|
+    Adhearsion.active_calls.values.each { |call| call.hangup }
+    AmqpManager.shutdown
+  end
 
 
-  # ami name: 'Bridge' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
+  after_initialized do |event|
+    Call.clear_all_redis_calls
+  end
 
 
   ami name: 'BridgeExec' do |event|
@@ -21,24 +23,19 @@ Adhearsion::Events.draw do
 
   ami name: 'PeerStatus' do |event|
     agent     = Agent.find_for(event)
-    old_state = agent ? agent.agent_state : nil
     new_state = event.headers['PeerStatus'].downcase
 
-    if old_state && old_state != 'talking'
-      Agent.update_state_for(agent, new_state) &&
-        AmqpManager.numbers_publish(event)
+    if agent
+      # agent.mutex.synchronize {
+        old_state = agent.agent_state
+
+        if old_state != 'talking'
+          Agent.update_state_for(agent, new_state) &&
+            AmqpManager.numbers_publish(event)
+        end
+      # }
     end
   end
-
-
-  # ami name: 'NewCallerid' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
-
-  # ami name: 'OriginateResponse' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
 
 
   ami name: 'Newstate' do |event|
@@ -58,16 +55,6 @@ Adhearsion::Events.draw do
   end
 
 
-  # ami name: 'Newchannel' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
-
-  # ami name: 'SoftHangupRequest' do |event|
-  #   AmqpManager.numbers_publish(event)
-  # end
-
-
   ami name: 'Hangup' do |event|
     Call.close_state_for(event)
 
@@ -76,4 +63,29 @@ Adhearsion::Events.draw do
         AmqpManager.numbers_publish(event)
     end
   end
+
+
+  # punchblock do |event|
+  #   puts event
+  # end
+
+  # ami name: 'Bridge' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'NewCallerid' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'OriginateResponse' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'Newchannel' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
+
+  # ami name: 'SoftHangupRequest' do |event|
+  #   AmqpManager.numbers_publish(event)
+  # end
 end

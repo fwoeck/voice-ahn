@@ -1,13 +1,16 @@
+require './app/models/agent_settings'
+
+AgentRegistry = ThreadSafe::Hash.new
+ChannelRegex  = /^SIP.(\d+)/
+
+
 class Agent
-
-  ChannelRegex = /^SIP.(\d+)/
-  Registry     = ThreadSafe::Hash.new
-  State        = Struct.new(
-                   :id, :name, :languages, :skills, :roles, :availability,
-                   :agent_state, :idle_since, :locked
-                 )
-
   class << self
+
+
+    def all_ids
+      AgentRegistry.keys.uniq
+    end
 
 
     def get_peer_from(event)
@@ -28,37 +31,63 @@ class Agent
 
     def find_for(event)
       peer = get_peer_from(event)
-      (Agent::Registry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
+      (AgentRegistry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
     end
 
 
     # Possible states are "registered", "unregistered" and "talking":
     #
-    def update_state_for(agent, status)
-      return unless agent && status
+    def update_state_for(agent, state)
+      return unless agent && state
 
-      if agent.agent_state != status
-        agent.agent_state = status
-        agent.idle_since  = Time.now.utc if status == 'registered'
-        $redis.set(agent_state_keyname(agent), status)
+      agent.mutex.synchronize {
+        update_internal_model(agent, state) &&
+          persist_state_for(agent, state)
+      }
+    end
+
+
+    def persist_state_for(agent, state)
+      $redis.set(agent_state_keyname(agent), state)
+      return true
+    end
+
+
+    def update_internal_model(agent, new_state)
+      old_state = agent.agent_state
+
+      if old_state != new_state
+        agent.agent_state = new_state
+        agent.idle_since  = Time.now.utc if old_state == 'talking'
+
+        if agent.locked == 'true' && new_state != 'talking'
+          checkin_agent(agent.id)
+        end
         return true
       end
+    end
 
-      false
+
+    def checkin_agent(agent_id)
+      Thread.new {
+        sleep 3
+        checkin(agent_id)
+      }
     end
 
 
     def checkout(agent_id)
-      agent = Registry[agent_id]
-      agent.locked = 'true' if agent
+      return false unless agent_id
+
+      agent = AgentRegistry[agent_id]
+      agent.locked = 'true'
       agent
     end
 
 
     def checkin(agent_id)
-      agent = Registry[agent_id]
-      agent.locked = 'false' if agent
-      agent
+      agent = AgentRegistry[agent_id]
+      agent.locked = 'false'
     end
 
 
@@ -67,7 +96,7 @@ class Agent
       keys = hash.keys
 
       assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
-      filtered_agent_ids(keys, hash, User.all_ids)
+      filtered_agent_ids(keys, hash)
     end
 
 
@@ -78,20 +107,19 @@ class Agent
     end
 
 
-    def filtered_agent_ids(keys, hash, agent_ids)
-      keys.each do |key|
+    def filtered_agent_ids(keys, hash)
+      keys.inject(all_ids) do |agent_ids, key|
         agent_ids = agent_ids.select { |uid|
           current_key_matches?(hash, key, uid)
         }
       end
-      agent_ids
     end
 
 
     def current_key_matches?(hash, key, uid)
-      return false unless Registry[uid]
+      return false unless AgentRegistry[uid]
 
-      value   = Registry[uid].send(key)
+      value   = AgentRegistry[uid].send(key)
       request = hash[key].to_s
 
       value.is_a?(Array) ?
@@ -116,7 +144,7 @@ class Agent
     # TODO We should use real Agent instances here:
     #
     def update_user_setting(setter, value, uid)
-      Registry[uid].send setter, (value[/,/] ? value.split(',') : value)
+      AgentRegistry[uid].send setter, (value[/,/] ? value.split(',') : value)
       Adhearsion.logger.info "Update #{uid}'s setting: #{setter}'#{value}'"
     end
 
