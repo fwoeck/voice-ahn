@@ -10,8 +10,8 @@ module CallScheduler
   def self.waiting_calls
     Adhearsion.active_calls.keys.map { |cid|
       Call::Queues[cid]
-    }.compact.select { |qcall|
-      !qcall.answered
+    }.compact.select { |call|
+      !call.answered
     }.sort { |x, y|
       x.queued_at <=> y.queued_at
     }
@@ -21,9 +21,11 @@ module CallScheduler
   def self.schedule_calls_to_agents
     waiting_calls.each { |call|
       agent_id = Agent.where(languages: call.lang, skills: call.skill).sort_by_idle_time.first
+      puts ">>> checkout #{agent_id} for #{call}" if agent_id
       agent    = Agent.checkout(agent_id)
 
       if agent
+        call.answered = true
         call.queue.push(agent)
         sleep 0.05
       end

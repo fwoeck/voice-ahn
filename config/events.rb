@@ -3,9 +3,12 @@ Adhearsion::Events.draw do
 
   shutdown do |event|
     Adhearsion.active_calls.values.each { |call| call.hangup }
-    $redis.keys("#{WimConfig.rails_env}.call.*").each { |key| $redis.del(key) }
-
     AmqpManager.shutdown
+  end
+
+
+  after_initialized do |event|
+    Call.clear_all_redis_calls
   end
 
 
@@ -23,14 +26,14 @@ Adhearsion::Events.draw do
     new_state = event.headers['PeerStatus'].downcase
 
     if agent
-      agent.mutex.synchronize {
+      # agent.mutex.synchronize {
         old_state = agent.agent_state
 
         if old_state != 'talking'
           Agent.update_state_for(agent, new_state) &&
             AmqpManager.numbers_publish(event)
         end
-      }
+      # }
     end
   end
 

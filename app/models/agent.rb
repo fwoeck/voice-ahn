@@ -37,28 +37,34 @@ class Agent
 
     # Possible states are "registered", "unregistered" and "talking":
     #
-    def update_state_for(agent, status)
-      return unless agent && status
+    def update_state_for(agent, state)
+      return unless agent && state
 
       agent.mutex.synchronize {
-        update_internal_model(agent, status)
-
-        if agent.agent_state != status
-          $redis.set(agent_state_keyname(agent), status)
-          return true
-        end
+        update_internal_model(agent, state) &&
+          persist_state_for(agent, state)
       }
-
-      false
     end
 
 
-    def update_internal_model(agent, status)
-      agent.agent_state = status
+    def persist_state_for(agent, state)
+      $redis.set(agent_state_keyname(agent), state)
+      return true
+    end
 
-      if status != 'talking'
-        agent.idle_since = Time.now.utc
-        checkin_agent(agent.id)
+
+    def update_internal_model(agent, new_state)
+      old_state = agent.agent_state
+
+      if old_state != new_state
+        agent.agent_state = new_state
+
+        if old_state == 'talking'
+          agent.idle_since = Time.now.utc
+          checkin_agent(agent.id)
+        end
+
+        return true
       end
     end
 

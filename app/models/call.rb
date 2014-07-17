@@ -145,16 +145,16 @@ class Call
   end
 
 
-  def self.detect_callers_for(event, call)
-    call.caller_id = call.caller_id || event.headers['CallerIDName']
+  def self.detect_callers_for(hdr, call)
+    call.caller_id = call.caller_id || hdr['CallerIDName']
     call.called_at = call.called_at || current_time
   end
 
 
-  def self.detect_channels_for(event, call)
-    chan  = event.headers['Channel']
-    chan1 = event.headers['Channel1']
-    chan2 = event.headers['Channel2']
+  def self.detect_channels_for(hdr, call)
+    chan  = hdr['Channel']
+    chan1 = hdr['Channel1']
+    chan2 = hdr['Channel2']
 
     call.channel1 = call.channel1 || chan1 || chan
     if chan2
@@ -170,9 +170,14 @@ class Call
     call = Call.find(tcid)
 
     if call
-      detect_callers_for(event, call)
-      detect_channels_for(event, call)
+      detect_callers_for(event.headers, call)
+      detect_channels_for(event.headers, call)
       call.save
     end
+  end
+
+
+  def self.clear_all_redis_calls
+    $redis.keys("#{WimConfig.rails_env}.call.*").each { |key| $redis.del(key) }
   end
 end
