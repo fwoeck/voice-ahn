@@ -69,7 +69,7 @@ class Agent
 
 
     def checkin_agent(agent_id)
-      # puts ">>> queue unlock #{agent_id}"
+      puts ">>> queue unlock #{agent_id}"
       Thread.new {
         sleep 3
         checkin(agent_id)
@@ -81,7 +81,7 @@ class Agent
       return false unless agent_id
 
       agent = AgentRegistry[agent_id]
-      # puts ">>> lock #{agent.id} for #{call}"
+      puts ">>> lock #{agent.id} for #{call}"
       agent.locked = 'true'
       agent
     end
@@ -89,7 +89,7 @@ class Agent
 
     def checkin(agent_id)
       agent = AgentRegistry[agent_id]
-      # puts ">>> unlock #{agent.id}"
+      puts ">>> unlock #{agent.id}"
       agent.locked = 'false'
     end
 

@@ -58,6 +58,7 @@ Adhearsion::Events.draw do
     Call.close_state_for(event)
 
     if (agent = Agent.find_for event)
+      Agent.checkin_agent(agent.id)
       Agent.update_state_for(agent, 'registered') &&
         AmqpManager.numbers_publish(event)
     end
