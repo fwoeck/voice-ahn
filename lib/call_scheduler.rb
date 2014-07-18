@@ -21,7 +21,7 @@ module CallScheduler
   def self.schedule_calls_to_agents
     waiting_calls.each { |call|
       agent_id = Agent.where(languages: call.lang, skills: call.skill).sort_by_idle_time.first
-      agent    = Agent.checkout(agent_id)
+      agent    = Agent.checkout(agent_id, call)
 
       if agent
         call.dispatched = true

@@ -60,15 +60,16 @@ class Agent
         agent.agent_state = new_state
         agent.idle_since  = Time.now.utc if old_state == 'talking'
 
-        if agent.locked == 'true' && new_state != 'talking'
-          checkin_agent(agent.id)
-        end
+        # if agent.locked == 'true' && new_state != 'talking'
+        #   checkin_agent(agent.id)
+        # end
         return true
       end
     end
 
 
     def checkin_agent(agent_id)
+      # puts ">>> queue unlock #{agent_id}"
       Thread.new {
         sleep 3
         checkin(agent_id)
@@ -76,10 +77,11 @@ class Agent
     end
 
 
-    def checkout(agent_id)
+    def checkout(agent_id, call)
       return false unless agent_id
 
       agent = AgentRegistry[agent_id]
+      # puts ">>> lock #{agent.id} for #{call}"
       agent.locked = 'true'
       agent
     end
@@ -87,6 +89,7 @@ class Agent
 
     def checkin(agent_id)
       agent = AgentRegistry[agent_id]
+      # puts ">>> unlock #{agent.id}"
       agent.locked = 'false'
     end
 
