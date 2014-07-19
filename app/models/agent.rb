@@ -161,7 +161,7 @@ class Agent
 
 
     def update_user_setting(setter, value, uid)
-      AgentRegistry[uid].send setter, (value[/,/] ? value.split(',') : value)
+      AgentRegistry[uid].send setter, (value[/,/] ? value.split(',') : value.to_sym)
       Adhearsion.logger.info "Update #{uid}'s setting: #{setter}'#{value}'"
     end
 
