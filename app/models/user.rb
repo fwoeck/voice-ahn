@@ -22,12 +22,12 @@ class User < Sequel::Model
 
 
   def availability
-    @memo_availability ||= ($redis.get(availability_keyname) || 'unknown')
+    @memo_availability ||= ($redis.get(availability_keyname) || :unknown)
   end
 
 
   def agent_state
-    @memo_agent_state ||= ($redis.get(agent_state_keyname) || 'unknown')
+    @memo_agent_state ||= ($redis.get(agent_state_keyname) || :unknown)
   end
 
 
@@ -37,10 +37,10 @@ class User < Sequel::Model
         id:           u.id,
         name:         u.name,
         languages:    u.languages.map(&:name),
+        availability: u.availability.to_sym,
+        agent_state:  u.agent_state.to_sym,
         skills:       u.skills.map(&:name),
         roles:        u.roles.map(&:name),
-        availability: u.availability,
-        agent_state:  u.agent_state,
         idle_since:   Time.now.utc,
         locked:       false
       )

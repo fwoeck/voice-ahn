@@ -3,7 +3,6 @@ require './app/models/agent'
 
 StateHistory = ThreadSafe::Hash.new
 StateStruct  = Struct.new(:last_state)
-IdleTimeout  = 3
 
 
 module AgentCollector
@@ -18,31 +17,9 @@ module AgentCollector
         sh = StateHistory[key]
         ag = AgentRegistry[key]
 
-        if agent_changed_to_idle?(ag)
-          schedule_unlock(ag)
-        end
+        ag.schedule_unlock if ag.unlock_necessary?
         sh.last_state = ag.agent_state
       }
-    end
-
-
-    def schedule_unlock(ag)
-      return if     ag.unlock_scheduled
-      return unless ag.locked
-
-      Thread.new {
-        ag.unlock_scheduled = true
-        sleep IdleTimeout
-
-        ag.locked = false
-        ag.unlock_scheduled = false
-        ag.idle_since = Time.now.utc
-      }
-    end
-
-
-    def agent_changed_to_idle?(ag)
-      ag.locked && ag.agent_state == 'registered'
     end
 
 

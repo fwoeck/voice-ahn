@@ -1,5 +1,6 @@
 AgentRegistry = ThreadSafe::Hash.new
 ChannelRegex  = /^SIP.(\d+)/
+IdleTimeout   = 3
 
 
 class Agent
@@ -52,6 +53,28 @@ class Agent
   end
 
 
+  def schedule_unlock
+    Thread.new {
+      self.unlock_scheduled = true
+      sleep IdleTimeout
+
+      self.locked = false
+      self.unlock_scheduled = false
+      self.idle_since = Time.now.utc
+    }
+  end
+
+
+  def unlock_necessary?
+    !self.unlock_scheduled && agent_is_idle?
+  end
+
+
+  def agent_is_idle?
+    self.locked && self.agent_state == :registered
+  end
+
+
   class << self
 
 
@@ -98,8 +121,8 @@ class Agent
 
     def set_availability_scope(hash)
       hash[:locked]       =  false
-      hash[:agent_state]  = 'registered'
-      hash[:availability] = 'ready'
+      hash[:agent_state]  = :registered
+      hash[:availability] = :ready
     end
 
 
