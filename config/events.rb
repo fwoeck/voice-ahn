@@ -1,13 +1,18 @@
 Adhearsion::Events.draw do
 
+
   shutdown do |event|
+    User.shutdown!
     Adhearsion.active_calls.values.each { |call| call.hangup }
-    AmqpManager.shutdown
+    AmqpManager.shutdown!
   end
 
 
   after_initialized do |event|
     Call.clear_all_redis_calls
+    User.fetch_all_agents
+    Thread.new { AgentCollector.start }
+    Thread.new { CallScheduler.start }
   end
 
 
@@ -25,14 +30,12 @@ Adhearsion::Events.draw do
     new_state = event.headers['PeerStatus'].downcase
 
     if agent
-      # agent.mutex.synchronize {
-        old_state = agent.agent_state
+      old_state = agent.agent_state
 
-        if old_state != 'talking'
-          Agent.update_state_for(agent, new_state) &&
-            AmqpManager.numbers_publish(event)
-        end
-      # }
+      if old_state != 'talking'
+        Agent.update_state_for(agent, new_state) &&
+          AmqpManager.numbers_publish(event)
+      end
     end
   end
 
@@ -58,7 +61,6 @@ Adhearsion::Events.draw do
     Call.close_state_for(event)
 
     if (agent = Agent.find_for event)
-      Agent.checkin_agent(agent.id)
       Agent.update_state_for(agent, 'registered') &&
         AmqpManager.numbers_publish(event)
     end

@@ -35,8 +35,6 @@ class Agent
     end
 
 
-    # Possible states are "registered", "unregistered" and "talking":
-    #
     def update_state_for(agent, state)
       return unless agent && state
 
@@ -54,26 +52,10 @@ class Agent
 
 
     def update_internal_model(agent, new_state)
-      old_state = agent.agent_state
-
-      if old_state != new_state
+      if agent.agent_state != new_state
         agent.agent_state = new_state
-        agent.idle_since  = Time.now.utc if old_state == 'talking'
-
-        # if agent.locked == 'true' && new_state != 'talking'
-        #   checkin_agent(agent.id)
-        # end
         return true
       end
-    end
-
-
-    def checkin_agent(agent_id)
-      puts ">>> queue unlock #{agent_id}"
-      Thread.new {
-        sleep 3
-        checkin(agent_id)
-      }
     end
 
 
@@ -81,7 +63,7 @@ class Agent
       return false unless agent_id
 
       agent = AgentRegistry[agent_id]
-      puts ">>> lock #{agent.id} for #{call}"
+      # puts ">>> lock #{agent.id} for #{call}"
       agent.locked = 'true'
       agent
     end
@@ -89,7 +71,7 @@ class Agent
 
     def checkin(agent_id)
       agent = AgentRegistry[agent_id]
-      puts ">>> unlock #{agent.id}"
+      # puts ">>> unlock #{agent.id}"
       agent.locked = 'false'
     end
 

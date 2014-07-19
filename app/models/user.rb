@@ -1,10 +1,14 @@
 Dir['./app/models/*.rb'].each { |f| require f }
 
+
 class User < Sequel::Model
 
   one_to_many :roles
   one_to_many :skills
   one_to_many :languages
+
+  @@ready    = false
+  @@shutdown = false
 
 
   def availability
@@ -31,6 +35,23 @@ class User < Sequel::Model
         locked:      'false'
       )
     end
+
+    @@ready = true
+  end
+
+
+  def self.shutdown!
+    @@shutdown = true
+  end
+
+
+  def self.shutdown?
+    @@shutdown
+  end
+
+
+  def self.ready?
+    @@ready
   end
 
 
@@ -38,6 +59,3 @@ class User < Sequel::Model
     self.select(:id).all.map(&:id)
   end
 end
-
-
-User.fetch_all_agents
