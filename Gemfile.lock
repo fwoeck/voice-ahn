@@ -18,10 +18,10 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 7e8f71f9514a53dcf4acf391773e4635ee8a95ca
+  revision: e7b6b6ad57d5d52d600cc8ea051385e008e03ae5
   branch: develop
   specs:
-    adhearsion (2.5.3)
+    adhearsion (2.5.4)
       activesupport (>= 3.0.0, < 5.0.0)
       adhearsion-loquacious (~> 1.9)
       bundler (~> 1.0)
@@ -385,7 +385,7 @@ GEM
     sequella (1.1.0)
       adhearsion (~> 2.1)
       sequel (>= 3.40.0)
-    slop (3.5.0)
+    slop (3.6.0)
     spoon (0.0.4)
       ffi
     state_machine (1.2.0)

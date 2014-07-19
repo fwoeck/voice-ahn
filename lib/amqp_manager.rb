@@ -43,7 +43,7 @@ module AmqpManager
     end
 
 
-    def shutdown
+    def shutdown!
       @connection.close
     end
 

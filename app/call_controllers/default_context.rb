@@ -106,12 +106,8 @@ class DefaultContext < Adhearsion::CallController
 
       begin
         wait_for_next_agent_on
-        # puts ">>> dial to #{qs.agent.name}"
         qs.status = dial "SIP/#{qs.agent.name}", for: dial_timeout.seconds
-        Agent.checkin_agent(qs.agent.id)
-        # puts ">>> dialed to #{qs.agent.name}"
       rescue TimeoutError
-        Agent.checkin_agent(qs.agent.id) if qs.agent
         qs.status = :timeout
       end
     end
@@ -132,7 +128,6 @@ class DefaultContext < Adhearsion::CallController
 
     Timeout::timeout(timeout) {
       qs.agent = qs.queue.pop
-      # puts ">>> popped #{qs.agent.id} for #{call.id}"
     }
   end
 end

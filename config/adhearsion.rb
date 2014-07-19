@@ -1,12 +1,12 @@
 Adhearsion.config do |config|
 
   config.production do |env|
-    env.platform.logging.level = :info
+    env.platform.logging.level = :warn
   end
 
 
   config.development do |env|
-    env.platform.logging.level = :info
+    env.platform.logging.level = :warn
   end
 
 

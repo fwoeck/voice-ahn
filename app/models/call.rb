@@ -84,11 +84,7 @@ class Call
   def self.set_skill_for(tcid, skill)
     call = find(tcid)
     call.skill = skill
-
-    # We can do this silently only because
-    # set_queued_at is invoked directly here after:
-    #
-    call.save(:silently)
+    call.save
   end
 
 

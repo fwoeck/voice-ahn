@@ -1,10 +1,82 @@
-require './app/models/agent_settings'
-
 AgentRegistry = ThreadSafe::Hash.new
 ChannelRegex  = /^SIP.(\d+)/
+IdleTimeout   = 3
 
 
 class Agent
+
+  attr_accessor :id, :name, :languages, :skills, :roles, :agent_state,
+                :locked, :availability, :idle_since, :mutex, :unlock_scheduled
+
+
+  def initialize(args)
+    self.id           = args[:id]
+    self.name         = args[:name]
+    self.languages    = args[:languages]
+    self.skills       = args[:skills]
+    self.roles        = args[:roles]
+    self.availability = args[:availability]
+    self.idle_since   = args[:idle_since]
+
+    self.mutex        = Mutex.new
+    self.agent_state  = args[:agent_state]
+    self.locked       = args[:locked]
+  end
+
+
+  def agent_state_keyname
+    "#{WimConfig.rails_env}.agent_state.#{self.id}"
+  end
+
+
+  def update_state_to(state)
+    return unless state
+
+    self.mutex.synchronize {
+      update_internal_model(state) &&
+        persist_state_with(state)
+    }
+  end
+
+
+  def persist_state_with(state)
+    $redis.set(self.agent_state_keyname, state)
+    return true
+  end
+
+
+  def update_internal_model(new_state)
+    if self.agent_state != new_state
+      self.agent_state = new_state
+      return true
+    end
+  end
+
+
+  def schedule_unlock
+    Thread.new {
+      self.unlock_scheduled = true
+      sleep IdleTimeout
+
+      unless self.agent_state == :talking
+        self.locked = false
+      end
+      self.unlock_scheduled = false
+      self.idle_since = Time.now.utc
+    }
+  end
+
+
+  def unlock_necessary?
+    !self.unlock_scheduled && agent_is_idle?
+  end
+
+
+  def agent_is_idle?
+    self.locked && self.agent_state == :registered
+  end
+
+
   class << self
 
 
@@ -19,61 +91,9 @@ class Agent
     end
 
 
-    def availability_keyname(agent)
-      "#{WimConfig.rails_env}.availability.#{agent.id}"
-    end
-
-
-    def agent_state_keyname(agent)
-      "#{WimConfig.rails_env}.agent_state.#{agent.id}"
-    end
-
-
     def find_for(event)
       peer = get_peer_from(event)
       (AgentRegistry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
-    end
-
-
-    # Possible states are "registered", "unregistered" and "talking":
-    #
-    def update_state_for(agent, state)
-      return unless agent && state
-
-      agent.mutex.synchronize {
-        update_internal_model(agent, state) &&
-          persist_state_for(agent, state)
-      }
-    end
-
-
-    def persist_state_for(agent, state)
-      $redis.set(agent_state_keyname(agent), state)
-      return true
-    end
-
-
-    def update_internal_model(agent, new_state)
-      old_state = agent.agent_state
-
-      if old_state != new_state
-        agent.agent_state = new_state
-        agent.idle_since  = Time.now.utc if old_state == 'talking'
-
-        # if agent.locked == 'true' && new_state != 'talking'
-        #   checkin_agent(agent.id)
-        # end
-        return true
-      end
-    end
-
-
-    def checkin_agent(agent_id)
-      # puts ">>> queue unlock #{agent_id}"
-      Thread.new {
-        sleep 3
-        checkin(agent_id)
-      }
     end
 
 
@@ -81,16 +101,14 @@ class Agent
       return false unless agent_id
 
       agent = AgentRegistry[agent_id]
-      # puts ">>> lock #{agent.id} for #{call}"
-      agent.locked = 'true'
+      agent.locked = true
       agent
     end
 
 
     def checkin(agent_id)
       agent = AgentRegistry[agent_id]
-      # puts ">>> unlock #{agent.id}"
-      agent.locked = 'false'
+      agent.locked = false
     end
 
 
@@ -104,9 +122,9 @@ class Agent
 
 
     def set_availability_scope(hash)
-      hash[:locked]       = 'false'
-      hash[:agent_state]  = 'registered'
-      hash[:availability] = 'ready'
+      hash[:locked]       =  false
+      hash[:agent_state]  = :registered
+      hash[:availability] = :ready
     end
 
 
@@ -127,7 +145,7 @@ class Agent
 
       value.is_a?(Array) ?
         value.include?(request) :
-        value == request
+        value.to_s == request
     end
 
 
@@ -144,16 +162,12 @@ class Agent
     end
 
 
-    # TODO We should use real Agent instances here:
-    #
     def update_user_setting(setter, value, uid)
-      AgentRegistry[uid].send setter, (value[/,/] ? value.split(',') : value)
+      AgentRegistry[uid].send setter, (value[/,/] ? value.split(',') : value.to_sym)
       Adhearsion.logger.info "Update #{uid}'s setting: #{setter}'#{value}'"
     end
 
 
-    # TODO We should use real Agent instances here:
-    #
     def get_agent_value_pair(data)
       uid = data.delete('user_id').to_i
       key = data.keys.first
