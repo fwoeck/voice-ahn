@@ -58,7 +58,9 @@ class Agent
       self.unlock_scheduled = true
       sleep IdleTimeout
 
-      self.locked = false
+      unless self.agent_state == :talking
+        self.locked = false
+      end
       self.unlock_scheduled = false
       self.idle_since = Time.now.utc
     }
