@@ -63,16 +63,14 @@ class Agent
       return false unless agent_id
 
       agent = AgentRegistry[agent_id]
-      # puts ">>> lock #{agent.id} for #{call}"
-      agent.locked = 'true'
+      agent.locked = true
       agent
     end
 
 
     def checkin(agent_id)
       agent = AgentRegistry[agent_id]
-      # puts ">>> unlock #{agent.id}"
-      agent.locked = 'false'
+      agent.locked = false
     end
 
 
@@ -86,7 +84,7 @@ class Agent
 
 
     def set_availability_scope(hash)
-      hash[:locked]       = 'false'
+      hash[:locked]       =  false
       hash[:agent_state]  = 'registered'
       hash[:availability] = 'ready'
     end
@@ -109,7 +107,7 @@ class Agent
 
       value.is_a?(Array) ?
         value.include?(request) :
-        value == request
+        value.to_s == request
     end
 
 

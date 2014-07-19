@@ -1,7 +1,7 @@
 class AgentSettings
 
   attr_accessor :id, :name, :languages, :skills, :roles, :agent_state,
-                :locked, :availability, :idle_since, :mutex
+                :locked, :availability, :idle_since, :mutex, :unlock_scheduled
 
 
   def initialize(args)

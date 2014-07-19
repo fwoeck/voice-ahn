@@ -32,7 +32,7 @@ class User < Sequel::Model
         availability: u.availability,
         agent_state:  u.agent_state,
         idle_since:   Time.now.utc,
-        locked:      'false'
+        locked:       false
       )
     end
 

@@ -12,40 +12,37 @@ module AgentCollector
 
   class << self
 
+
     def unlock_idle_agents
       AgentRegistry.keys.each { |key|
         sh = StateHistory[key]
         ag = AgentRegistry[key]
-        tn = Time.now.utc
 
-        update_agent_history(ag, sh, tn)
+        if agent_changed_to_idle?(ag)
+          schedule_unlock(ag)
+        end
         sh.last_state = ag.agent_state
       }
     end
 
 
-    def update_agent_history(ag, sh, tn)
-      if agent_changed_to_registered?(ag, sh)
-        ag.idle_since = tn
-        # puts ">>> agent changed to registered #{ag.id}"
-        schedule_unlock(ag) if ag.locked == 'true'
-      end
-    end
-
-
     def schedule_unlock(ag)
+      return if     ag.unlock_scheduled
+      return unless ag.locked
+
       Thread.new {
+        ag.unlock_scheduled = true
         sleep IdleTimeout
-        # puts ">>> agent unlocked #{ag.id}"
-        ag.locked = 'false'
+
+        ag.locked = false
+        ag.unlock_scheduled = false
+        ag.idle_since = Time.now.utc
       }
     end
 
 
-    def agent_changed_to_registered?(ag, sh)
-      # puts ">>> #{ag.id} old state: #{sh.last_state}, new state: #{ag.agent_state}" if sh.last_state != ag.agent_state
-      (ag.locked == 'true' || sh.last_state != 'registered') &&
-        ag.agent_state == 'registered'
+    def agent_changed_to_idle?(ag)
+      ag.locked && ag.agent_state == 'registered'
     end
 
 
