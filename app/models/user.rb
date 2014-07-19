@@ -11,19 +11,29 @@ class User < Sequel::Model
   @@shutdown = false
 
 
+  def availability_keyname
+    "#{WimConfig.rails_env}.availability.#{self.id}"
+  end
+
+
+  def agent_state_keyname
+    "#{WimConfig.rails_env}.agent_state.#{self.id}"
+  end
+
+
   def availability
-    @memo_availability ||= ($redis.get(Agent.availability_keyname self) || 'unknown')
+    @memo_availability ||= ($redis.get(availability_keyname) || 'unknown')
   end
 
 
   def agent_state
-    @memo_agent_state ||= ($redis.get(Agent.agent_state_keyname self) || 'unknown')
+    @memo_agent_state ||= ($redis.get(agent_state_keyname) || 'unknown')
   end
 
 
   def self.fetch_all_agents
     all.each do |u|
-      AgentRegistry[u.id] ||= AgentSettings.new(
+      AgentRegistry[u.id] ||= Agent.new(
         id:           u.id,
         name:         u.name,
         languages:    u.languages.map(&:name),

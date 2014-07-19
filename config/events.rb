@@ -33,7 +33,7 @@ Adhearsion::Events.draw do
       old_state = agent.agent_state
 
       if old_state != 'talking'
-        Agent.update_state_for(agent, new_state) &&
+        agent.update_state_to(new_state) &&
           AmqpManager.numbers_publish(event)
       end
     end
@@ -51,7 +51,7 @@ Adhearsion::Events.draw do
     end
 
     if agent_state && (agent = Agent.find_for event)
-      Agent.update_state_for(agent, agent_state) &&
+      agent.update_state_to(agent_state) &&
         AmqpManager.numbers_publish(event)
     end
   end
@@ -61,7 +61,7 @@ Adhearsion::Events.draw do
     Call.close_state_for(event)
 
     if (agent = Agent.find_for event)
-      Agent.update_state_for(agent, 'registered') &&
+      agent.update_state_to('registered') &&
         AmqpManager.numbers_publish(event)
     end
   end
