@@ -6,7 +6,7 @@ Adhearsion.config do |config|
 
 
   config.development do |env|
-    env.platform.logging.level = :warn
+    env.platform.logging.level = :info
   end
 
 

@@ -36,16 +36,16 @@ class Call
   end
 
 
-  def save(silently=false)
-    $redis.set(Call.key_name(target_id), headers.to_json, ex: 3.hours)
-    publish_to_numbers unless silently
+  def save(expires=3.hours)
+    $redis.set(Call.key_name(target_id), headers.to_json, ex: expires)
+    publish_to_numbers
   end
 
 
   def destroy
     self.hungup    = true
     self.hungup_at = Call.current_time
-    save
+    save(1.minute)
   end
 
 

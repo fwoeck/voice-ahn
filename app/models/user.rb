@@ -32,21 +32,27 @@ class User < Sequel::Model
 
 
   def self.fetch_all_agents
-    all.each do |u|
-      AgentRegistry[u.id] ||= Agent.new(
-        id:           u.id,
-        name:         u.name,
-        languages:    u.languages.map(&:name),
-        availability: u.availability.to_sym,
-        agent_state:  u.agent_state.to_sym,
-        skills:       u.skills.map(&:name),
-        roles:        u.roles.map(&:name),
-        idle_since:   Time.now.utc,
-        locked:       false
-      )
+    all.each do |user|
+      $redis.set(user.agent_state_keyname, :unknown)
+      build_from(user)
     end
 
     @@ready = true
+  end
+
+
+  def self.build_from(u)
+    AgentRegistry[u.id] ||= Agent.new(
+      id:           u.id,
+      locked:       false,
+      name:         u.name,
+      idle_since:   Time.now.utc,
+      roles:        u.roles.map(&:name),
+      skills:       u.skills.map(&:name),
+      agent_state:  u.agent_state.to_sym,
+      availability: u.availability.to_sym,
+      languages:    u.languages.map(&:name)
+    )
   end
 
 
