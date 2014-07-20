@@ -6,7 +6,7 @@ STDERR.sync = true
 require File.expand_path('../../config/environment',  __FILE__)
 require 'adhearsion/cli_commands'
 
-Thread.abort_on_exception = true # Set to true for debugging
+Thread.abort_on_exception = false # Set to true for debugging
 
 Dir['./lib/*.rb'].each { |f| require f }
 
