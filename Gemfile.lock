@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: e7b6b6ad57d5d52d600cc8ea051385e008e03ae5
+  revision: 667578b20f10c254a731e42ee975554de1a638cb
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -137,9 +137,9 @@ GEM
       nokogiri (~> 1.5)
     nio4r (1.0.0)
     nio4r (1.0.0-java)
-    nokogiri (1.6.2.1)
+    nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
-    nokogiri (1.6.2.1-java)
+    nokogiri (1.6.3.1-java)
     pry (0.10.0)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
@@ -155,14 +155,14 @@ GEM
       rspec-core (~> 3.0.0)
       rspec-expectations (~> 3.0.0)
       rspec-mocks (~> 3.0.0)
-    rspec-core (3.0.2)
+    rspec-core (3.0.3)
       rspec-support (~> 3.0.0)
-    rspec-expectations (3.0.2)
+    rspec-expectations (3.0.3)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.0.0)
-    rspec-mocks (3.0.2)
+    rspec-mocks (3.0.3)
       rspec-support (~> 3.0.0)
-    rspec-support (3.0.2)
+    rspec-support (3.0.3)
     rubinius-actor (0.0.2)
       rubinius-core-api
     rubinius-core-api (0.0.1)
