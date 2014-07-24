@@ -11,11 +11,11 @@ QueueStruct = Struct.new(
 class DefaultContext < Adhearsion::CallController
 
   attr_accessor :qs
-  after_call :cleanup_leftovers
 
 
   def run
     answer
+    call.on_end { cleanup_leftovers }
     play 'wimdu/en_welcome_to_wimdu'
 
     lang = choose_a_language

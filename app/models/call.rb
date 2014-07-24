@@ -65,11 +65,15 @@ class Call
     cid  = data['call_id']
     call = Adhearsion.active_calls.values.find { |c| c.id == cid }
 
-    # TODO We need to implement call transfers too:
-    #
     if call
       call.pause_controllers
-      call.hangup
+      case data['command']
+      when 'hangup'
+        call.hangup
+      when 'transfer'
+        to = data['to']
+        call.controllers.first.dial("SIP/#{to}")
+      end
     end
   end
 
