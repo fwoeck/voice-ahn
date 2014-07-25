@@ -179,5 +179,8 @@ class Call
 
   def self.clear_all_redis_calls
     $redis.keys("#{WimConfig.rails_env}.call.*").each { |key| $redis.del(key) }
+  rescue Redis::CannotConnectError
+    sleep 1
+    retry
   end
 end
