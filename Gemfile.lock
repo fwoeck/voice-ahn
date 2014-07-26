@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 667578b20f10c254a731e42ee975554de1a638cb
+  revision: 8b327a66573a4670b97fd1cd979e023d683c4c45
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -395,11 +395,11 @@ GEM
     timers (1.1.0)
     tzinfo (1.2.1)
       thread_safe (~> 0.1)
-    virtus (1.0.2)
+    virtus (1.0.3)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
-      descendants_tracker (~> 0.0.3)
-      equalizer (~> 0.0.9)
+      descendants_tracker (~> 0.0, >= 0.0.3)
+      equalizer (~> 0.0, >= 0.0.9)
     wirble (0.1.3)
 
 PLATFORMS
