@@ -1,6 +1,5 @@
 Adhearsion::Events.draw do
 
-
   shutdown do |event|
     User.shutdown!
     Adhearsion.active_calls.values.each { |call| call.hangup }
