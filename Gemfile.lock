@@ -98,7 +98,7 @@ GEM
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     colorize (0.7.3)
-    connection_pool (1.2.0)
+    connection_pool (2.0.0)
     countdownlatch (1.0.0)
     deep_merge (1.0.1)
     descendants_tracker (0.0.4)
@@ -112,9 +112,7 @@ GEM
     ffi (1.9.3-java)
     ffi2-generators (0.1.1)
     future-resource (1.1.0)
-    girl_friday (0.11.2)
-      connection_pool (~> 1.0)
-      rubinius-actor
+    girl_friday (0.9.5)
     git-smart (0.1.10)
       colorize
     has-guarded-handlers (1.6.0)
@@ -163,10 +161,6 @@ GEM
     rspec-mocks (3.0.3)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.3)
-    rubinius-actor (0.0.2)
-      rubinius-core-api
-    rubinius-core-api (0.0.1)
-    rubinius-core-api (0.0.1-java)
     ruby_fs (1.1.1)
       celluloid-io (~> 0.13)
     ruby_jid (1.0.0)

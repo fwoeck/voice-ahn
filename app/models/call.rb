@@ -206,10 +206,18 @@ class Call
 
     def update_initiator_for(chan1, chan2, call)
       if chan2
-        call.channel2 = call.channel2 || (call.channel1 == chan1 ? chan2 : chan1)
+        call.channel2  = call.channel2 || (call.channel1 == chan1 ? chan2 : chan1)
       else
-        call.initiator = true if call.channel1[/sipgate|skype|SIP.100-/]
+        call.initiator = is_initiator?(call)
       end
+    end
+
+
+    # FIXME How can we distinguish a "true" initiator from the call that
+    #       is introduced by the dial action of the call controller?
+    #
+    def is_initiator?(call)
+      call.channel1[/sipgate|skype|SIP.100-/]
     end
 
 
