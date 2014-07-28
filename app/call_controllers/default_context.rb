@@ -100,17 +100,32 @@ class DefaultContext < Adhearsion::CallController
   def queue_and_handle_call(lang, skill)
     self.qs = get_queue_struct_for(lang, skill)
 
-    while !call_was_answered_or_timed_out? do
+    while qs && !call_was_answered_or_timed_out? do
       qs.dispatched = false
       qs.agent      = nil
 
       begin
         wait_for_next_agent_on
-        qs.status = dial "SIP/#{qs.agent.name}", for: dial_timeout.seconds
+        qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
       rescue TimeoutError
         qs.status = :timeout
       end
     end
+  end
+
+
+  def dial_to(to, options)
+    dial = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", options, call)
+    metadata['current_dial'] = dial
+    run_dial(dial)
+  end
+
+
+  def run_dial(d)
+    d.run self
+    d.await_completion
+    d.cleanup_calls
+    d.status
   end
 
 

@@ -1,4 +1,6 @@
-ENV['TZ'] = 'UTC'
+ENV['TZ']     = 'UTC'
+ENV['LANG']   = 'en_US.UTF-8'
+ENV['LC_ALL'] = 'en_US.UTF-8'
 
 require 'yaml'
 require 'bundler'
@@ -9,6 +11,8 @@ require 'active_support/all'
 
 
 Time.zone = 'Etc/UTC'
+I18n.enforce_available_locales = false
+
 WimConfig = YAML.load_file('./config/app.yml')
 WimConfig.keys.each { |key|
   WimConfig.instance_eval "class << self; define_method(:#{key}) {self['#{key}']}; end"

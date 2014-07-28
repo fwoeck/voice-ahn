@@ -64,29 +64,52 @@ class Call
   class << self
 
     def execute_command_with(data)
-      if call = find_ahn_call_for(data)
-        case data['command']
-        when 'hangup'
-          hangup(call)
-        when 'transfer'
-          transfer(call, data)
-        end
+      case data['command']
+      when 'hangup'
+        hangup(data)
+      when 'transfer'
+        transfer(data)
+      when 'originate'
+        originate(data)
       end
     end
 
 
-    def transfer(call, data)
-      peer = call.peers.values.first
+    def originate(data)
+      from_a = User.where(name: data['from']).first
+      from   = from_a ? "SIP/#{from_a.name}" : "SIP/#{data['from']}" # TODO Can we add the fullname here?
+      to     = data['to']
+
+      Adhearsion::OutboundCall.originate(
+        "SIP/#{to}", from: from, controller: DirectContext
+      )
+    end
+
+
+    def transfer(data)
+      call = find_ahn_call_for(data)
+      cc   = call.controllers.first
+      cd   = cc.metadata['current_dial']
+
       call.execute_controller {
-        dial("SIP/#{data['to']}")
-        peer.unjoin(call.id)
+        td = Adhearsion::CallController::Dial::Dial.new("SIP/#{data['to']}", {}, call)
+
+        td.skip_cleanup
+        cd.skip_cleanup
+        td.run(self)
+        cd.merge td
+
+        td.await_completion
+        td.cleanup_calls
       }
     end
 
 
-    def hangup(call)
-      call.pause_controllers
-      call.hangup
+    def hangup(data)
+      if call = find_ahn_call_for(data)
+        call.pause_controllers
+        call.hangup
+      end
     end
 
 
@@ -165,6 +188,8 @@ class Call
 
     def detect_callers_for(hdr, call)
       call.caller_id = call.caller_id || hdr['CallerIDName']
+      call.caller_id.force_encoding('UTF-8')
+
       call.called_at = call.called_at || current_time
     end
 
