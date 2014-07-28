@@ -197,27 +197,29 @@ class Call
     def detect_channels_for(hdr, call)
       chan  = hdr['Channel']
       chan1 = hdr['Channel1']
-      chan2 = hdr['Channel2']
 
       call.channel1 = call.channel1 || chan1 || chan
-      update_initiator_for(chan1, chan2, call)
+      update_initiator_for(hdr, call)
     end
 
 
-    def update_initiator_for(chan1, chan2, call)
+    def update_initiator_for(hdr, call)
+      chan1 = hdr['Channel1']
+      chan2 = hdr['Channel2']
+
       if chan2
         call.channel2  = call.channel2 || (call.channel1 == chan1 ? chan2 : chan1)
       else
-        call.initiator = is_initiator?(call)
+        call.initiator = is_initiator?(hdr)
       end
     end
 
 
-    # FIXME How can we distinguish a "true" initiator from the call that
-    #       is introduced by the dial action of the call controller?
+    # FIXME This doesn't work for agent-2-agent calls via direct_context:
     #
-    def is_initiator?(call)
-      call.channel1[/sipgate|skype|SIP.100-/]
+    def is_initiator?(hdr)
+      (hdr['ConnectedLineNum'] || "") == "" &&
+        (hdr['ConnectedLineName'] || "") == ""
     end
 
 
