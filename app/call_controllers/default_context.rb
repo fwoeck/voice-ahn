@@ -107,8 +107,8 @@ class DefaultContext < Adhearsion::CallController
       begin
         wait_for_next_agent_on
         qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
-      rescue TimeoutError
-        qs.status = :timeout
+      rescue TimeoutError, NoMethodError
+        qs.status = :timeout if qs
       end
     end
   end
