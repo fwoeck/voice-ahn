@@ -38,6 +38,9 @@ class User < Sequel::Model
     end
 
     @@ready = true
+  rescue Redis::CannotConnectError
+    sleep 1
+    retry
   end
 
 

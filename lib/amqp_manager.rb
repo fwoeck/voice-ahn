@@ -69,7 +69,7 @@ module AmqpManager
 
         if data['user_id']
           Agent.update_client_settings_with(data)
-        elsif data['call_id']
+        elsif data['command']
           Call.execute_command_with(data)
         end
       }

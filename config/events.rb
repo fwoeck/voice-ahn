@@ -1,6 +1,5 @@
 Adhearsion::Events.draw do
 
-
   shutdown do |event|
     User.shutdown!
     Adhearsion.active_calls.values.each { |call| call.hangup }
@@ -9,8 +8,8 @@ Adhearsion::Events.draw do
 
 
   after_initialized do |event|
-    Call.clear_all_redis_calls
     User.fetch_all_agents
+    Call.clear_all_redis_calls
     Thread.new { AgentCollector.start }
     Thread.new { CallScheduler.start }
   end
