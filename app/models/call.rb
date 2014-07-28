@@ -86,6 +86,8 @@ class Call
     end
 
 
+    # FIXME This doesn't work yet:
+    #
     def transfer(data)
       call = find_ahn_call_for(data)
       cc   = call.controllers.first
