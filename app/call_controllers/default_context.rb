@@ -48,7 +48,6 @@ class DefaultContext < Adhearsion::CallController
 
 
   def cleanup_leftovers
-    stop_moh
     Call::Queues.delete call_id
     @call_id = @qs = nil
   end
@@ -105,14 +104,16 @@ class DefaultContext < Adhearsion::CallController
     while qs && !call_was_answered_or_timed_out? do
       qs.dispatched = false
       qs.agent      = nil
-
-      begin
-        wait_for_next_agent_on
-        qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
-      rescue TimeoutError, NoMethodError
-        qs.status = :timeout if qs
-      end
+      dial_to_next_agent
     end
+  end
+
+
+  def dial_to_next_agent
+    wait_for_next_agent_on
+    qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
+  rescue TimeoutError, NoMethodError
+    qs.status = :timeout if qs
   end
 
 
