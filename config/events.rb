@@ -25,6 +25,9 @@ Adhearsion::Events.draw do
   end
 
 
+  # See adhearsion-xmpp for agent availability-states
+  # Has no Rayo-pendant:
+  #
   ami name: 'PeerStatus' do |event|
     agent     = Agent.find_for(event)
     new_state = event.headers['PeerStatus'].downcase.to_sym
@@ -67,7 +70,9 @@ Adhearsion::Events.draw do
   end
 
 
-  # punchblock do |event|
+  # ! This emits Rayo-Events
+  #
+  # punchblock(Punchblock::Event::End) do |event|
   #   puts event
   # end
 

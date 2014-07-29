@@ -86,24 +86,29 @@ class Call
     end
 
 
-    # FIXME This doesn't work yet:
-    #
     def transfer(data)
       call = find_ahn_call_for(data)
-      cc   = call.controllers.first
-      cd   = cc.metadata['current_dial']
+      call.auto_hangup = false
 
-      call.execute_controller {
-        td = Adhearsion::CallController::Dial::Dial.new("SIP/#{data['to']}", {}, call)
+      cdial = call.controllers.first.metadata['current_dial']
+      execute_transfer(call, cdial, data['to'])
+    end
 
-        td.skip_cleanup
-        cd.skip_cleanup
-        td.run(self)
-        cd.merge td
 
-        td.await_completion
-        td.cleanup_calls
-      }
+    def execute_transfer(call, cdial, to)
+      call.execute_controller do
+        begin
+          cdial.cleanup_calls
+          tdial = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", {}, call)
+          metadata['current_dial'] = tdial
+
+          tdial.run self
+          tdial.await_completion
+          tdial.cleanup_calls
+        ensure
+          hangup
+        end
+      end
     end
 
 

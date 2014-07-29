@@ -142,6 +142,9 @@ class DefaultContext < Adhearsion::CallController
     timeout   = 2 * dial_timeout
 
     Timeout::timeout(timeout) {
+      moh = play! 'wimdu/en_welcome_to_wimdu'
+      call.on_joined { moh.stop! }
+
       qs.agent = qs.queue.pop
     }
   end
