@@ -3,8 +3,8 @@ require 'timeout'
 
 
 QueueStruct = Struct.new(
-  :queue, :lang, :skill, :queued_at,
-  :dispatched, :tries, :status, :agent
+  :queue, :lang, :skill, :queued_at, :dispatched,
+  :tries, :status, :agent, :moh
 )
 
 
@@ -41,12 +41,14 @@ class DefaultContext < Adhearsion::CallController
 
   def get_queue_struct_for(lang, skill)
     Call::Queues[call_id] ||= QueueStruct.new(
-      Queue.new, lang, skill, Time.now.utc, false, 0, nil, nil
+      Queue.new, lang, skill, Time.now.utc,
+      false, 0, nil, nil, nil
     )
   end
 
 
   def cleanup_leftovers
+    stop_moh
     Call::Queues.delete call_id
     @call_id = @qs = nil
   end
@@ -121,11 +123,21 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
+  def stop_moh
+    if qs && qs.moh
+      qs.moh.stop!
+      qs.moh = nil
+    end
+  end
+
+
   def run_dial(d)
     d.run self
+    stop_moh
     d.await_completion
     d.cleanup_calls
-    d.status
+
+    return d.status
   end
 
 
@@ -137,14 +149,12 @@ class DefaultContext < Adhearsion::CallController
 
   def wait_for_next_agent_on
     raise TimeoutError if qs.tries > 2
-
     qs.tries += 1
     timeout   = 2 * dial_timeout
 
     Timeout::timeout(timeout) {
-      moh = play! 'wimdu/en_welcome_to_wimdu'
-      call.on_joined { moh.stop! }
-
+      stop_moh
+      qs.moh = play! 'wimdu/songbirds'
       qs.agent = qs.queue.pop
     }
   end
