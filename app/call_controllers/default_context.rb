@@ -118,27 +118,30 @@ class DefaultContext < Adhearsion::CallController
 
 
   def dial_to(to, options)
-    dial = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", options, call)
-    metadata['current_dial'] = dial
-    run_dial(dial)
+    cd = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", options, call)
+    metadata['current_dial'] = cd
+    execute_dial(cd)
   end
 
 
   def stop_moh
     if qs && qs.moh
-      qs.moh.stop!
+      begin
+        qs.moh.stop!
+      rescue Punchblock::Component::InvalidActionError
+      end
       qs.moh = nil
     end
   end
 
 
-  def run_dial(d)
-    d.run self
+  def execute_dial(cd)
+    cd.run self
     stop_moh
-    d.await_completion
-    d.cleanup_calls
+    cd.await_completion
+    cd.cleanup_calls
 
-    return d.status
+    return cd.status
   end
 
 
