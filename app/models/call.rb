@@ -194,7 +194,7 @@ class Call
 
 
     def detect_callers_for(hdr, call)
-      call.caller_id = hdr['CallerIDName'] || call.caller_id
+      call.caller_id = hdr['CallerIDNum'] || hdr['CallerIDName'] || call.caller_id
       call.caller_id.force_encoding('UTF-8')
 
       call.called_at = call.called_at || current_time
