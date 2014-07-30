@@ -9,8 +9,8 @@ module AgentCollector
 
   @@running = false
 
-  class << self
 
+  class << self
 
     def unlock_idle_agents
       AgentRegistry.keys.each { |key|

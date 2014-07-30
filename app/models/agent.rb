@@ -10,17 +10,18 @@ class Agent
 
 
   def initialize(args)
-    self.id           = args[:id]
-    self.name         = args[:name]
-    self.languages    = args[:languages]
-    self.skills       = args[:skills]
-    self.roles        = args[:roles]
-    self.availability = args[:availability]
-    self.idle_since   = args[:idle_since]
+    s = self
+    s.id           = args[:id]
+    s.name         = args[:name]
+    s.languages    = args[:languages]
+    s.skills       = args[:skills]
+    s.roles        = args[:roles]
+    s.availability = args[:availability]
+    s.idle_since   = args[:idle_since]
 
-    self.mutex        = Mutex.new
-    self.agent_state  = args[:agent_state]
-    self.locked       = args[:locked]
+    s.mutex        = Mutex.new
+    s.agent_state  = args[:agent_state]
+    s.locked       = args[:locked]
   end
 
 
@@ -54,15 +55,15 @@ class Agent
 
 
   def schedule_unlock
+    s = self
+    s.unlock_scheduled = true
+
     Thread.new {
-      self.unlock_scheduled = true
       sleep IdleTimeout
 
-      unless self.agent_state == :talking
-        self.locked = false
-      end
-      self.unlock_scheduled = false
-      self.idle_since = Time.now.utc
+      s.locked = false if agent_state != :talking
+      s.unlock_scheduled = false
+      s.idle_since = Time.now.utc
     }
   end
 
@@ -73,12 +74,11 @@ class Agent
 
 
   def agent_is_idle?
-    self.locked && self.agent_state == :registered
+    self.locked && agent_state == :registered
   end
 
 
   class << self
-
 
     def all_ids
       AgentRegistry.keys.uniq

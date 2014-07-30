@@ -6,31 +6,31 @@ class Call
 
   attr_accessor :channel1, :channel2, :target_id, :language,
                 :called_at, :queued_at, :hungup_at, :dispatched_at,
-                :skill, :hungup, :caller_id, :initiator
+                :skill, :hungup, :caller_id, :conn_line
 
 
   def initialize(par=nil)
     if par
-      @called_at     = par.fetch(:called_at, nil)
-      @caller_id     = par.fetch(:caller_id, nil)
+      @target_id     = par.fetch(:target_id)
+      @skill         = par.fetch(:skill, nil)
+      @hungup        = par.fetch(:hungup, nil)
+      @language      = par.fetch(:language, nil)
       @channel1      = par.fetch(:channel1, nil)
       @channel2      = par.fetch(:channel2, nil)
-      @dispatched_at = par.fetch(:dispatched_at, nil)
-      @hungup        = par.fetch(:hungup, nil)
+      @called_at     = par.fetch(:called_at, nil)
+      @caller_id     = par.fetch(:caller_id, nil)
+      @conn_line     = par.fetch(:conn_line, nil)
       @hungup_at     = par.fetch(:hungup_at, nil)
-      @initiator     = par.fetch(:initiator, nil)
-      @language      = par.fetch(:language, nil)
       @queued_at     = par.fetch(:queued_at, nil)
-      @skill         = par.fetch(:skill, nil)
-      @target_id     = par.fetch(:target_id)
+      @dispatched_at = par.fetch(:dispatched_at, nil)
     end
   end
 
 
   def headers
     {
-      'Channel1' => channel1,  'Channel2' => channel2,  'Language'     => language,  'Skill'    => skill,
-      'CallerId' => caller_id, 'Hungup'   => hungup,    'Initiator'    => initiator, 'CalledAt' => called_at,
+      'Channel1' => channel1,  'Channel2' => channel2,  'Language'     => language,     'Skill'    => skill,
+      'CallerId' => caller_id, 'Hungup'   => hungup,    'CalledAt'     => called_at,    'ConnLine' => conn_line,
       'QueuedAt' => queued_at, 'HungupAt' => hungup_at, 'DispatchedAt' => dispatched_at
     }
   end
@@ -78,30 +78,37 @@ class Call
     def originate(data)
       from_a = User.where(name: data['from']).first
       from   = from_a ? "SIP/#{from_a.name}" : "SIP/#{data['from']}" # TODO Can we add the fullname here?
-      to     = data['to']
+      to     = "SIP/#{data['to']}"
 
       Adhearsion::OutboundCall.originate(
-        "SIP/#{to}", from: from, controller: DirectContext
+        from, from: to, controller: DirectContext
       )
     end
 
 
     def transfer(data)
       call = find_ahn_call_for(data)
-      cc   = call.controllers.first
-      cd   = cc.metadata['current_dial']
+      call.auto_hangup = false
 
-      call.execute_controller {
-        td = Adhearsion::CallController::Dial::Dial.new("SIP/#{data['to']}", {}, call)
+      cdial = call.controllers.first.metadata['current_dial']
+      execute_transfer(call, cdial, data['to'])
+    end
 
-        td.skip_cleanup
-        cd.skip_cleanup
-        td.run(self)
-        cd.merge td
 
-        td.await_completion
-        td.cleanup_calls
-      }
+    def execute_transfer(call, cdial, to)
+      call.execute_controller do
+        begin
+          cdial.cleanup_calls
+          tdial = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", {}, call)
+          metadata['current_dial'] = tdial
+
+          tdial.run self
+          tdial.await_completion
+          tdial.cleanup_calls
+        ensure
+          hangup
+        end
+      end
     end
 
 
@@ -156,7 +163,7 @@ class Call
         channel2:      fields['Channel2'],
         language:      fields['Language'],
         queued_at:     fields['QueuedAt'],
-        initiator:     fields['Initiator'],
+        conn_line:     fields['ConnLine'],
         dispatched_at: fields['DispatchedAt']
       }
 
@@ -187,7 +194,7 @@ class Call
 
 
     def detect_callers_for(hdr, call)
-      call.caller_id = call.caller_id || hdr['CallerIDName']
+      call.caller_id = hdr['CallerIDName'] || call.caller_id
       call.caller_id.force_encoding('UTF-8')
 
       call.called_at = call.called_at || current_time
@@ -195,29 +202,19 @@ class Call
 
 
     def detect_channels_for(hdr, call)
-      chan  = hdr['Channel']
-      chan1 = hdr['Channel1']
+      chan1 = hdr['Channel1'] || hdr['Channel']
       chan2 = hdr['Channel2']
 
-      call.channel1 = call.channel1 || chan1 || chan
-      update_initiator_for(chan1, chan2, call)
+      call.channel1    = chan1
+      call.channel2    = chan2
+      call.conn_line ||= connected_line_from(hdr)
     end
 
 
-    def update_initiator_for(chan1, chan2, call)
-      if chan2
-        call.channel2  = call.channel2 || (call.channel1 == chan1 ? chan2 : chan1)
-      else
-        call.initiator = is_initiator?(call)
-      end
-    end
-
-
-    # FIXME How can we distinguish a "true" initiator from the call that
-    #       is introduced by the dial action of the call controller?
+    # FIXME This doesn't work for agent-2-agent calls via direct_context:
     #
-    def is_initiator?(call)
-      call.channel1[/sipgate|skype|SIP.100-/]
+    def connected_line_from(hdr)
+      hdr['ConnectedLineNum'] || hdr['ConnectedLineName']
     end
 
 

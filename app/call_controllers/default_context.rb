@@ -3,8 +3,8 @@ require 'timeout'
 
 
 QueueStruct = Struct.new(
-  :queue, :lang, :skill, :queued_at,
-  :dispatched, :tries, :status, :agent
+  :queue, :lang, :skill, :queued_at, :dispatched,
+  :tries, :status, :agent, :moh
 )
 
 
@@ -41,7 +41,8 @@ class DefaultContext < Adhearsion::CallController
 
   def get_queue_struct_for(lang, skill)
     Call::Queues[call_id] ||= QueueStruct.new(
-      Queue.new, lang, skill, Time.now.utc, false, 0, nil, nil
+      Queue.new, lang, skill, Time.now.utc,
+      false, 0, nil, nil, nil
     )
   end
 
@@ -103,29 +104,44 @@ class DefaultContext < Adhearsion::CallController
     while qs && !call_was_answered_or_timed_out? do
       qs.dispatched = false
       qs.agent      = nil
-
-      begin
-        wait_for_next_agent_on
-        qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
-      rescue TimeoutError
-        qs.status = :timeout
-      end
+      dial_to_next_agent
     end
   end
 
 
-  def dial_to(to, options)
-    dial = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", options, call)
-    metadata['current_dial'] = dial
-    run_dial(dial)
+  def dial_to_next_agent
+    wait_for_next_agent_on
+    qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
+  rescue TimeoutError, NoMethodError
+    qs.status = :timeout if qs
   end
 
 
-  def run_dial(d)
-    d.run self
-    d.await_completion
-    d.cleanup_calls
-    d.status
+  def dial_to(to, options)
+    cd = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", options, call)
+    metadata['current_dial'] = cd
+    execute_dial(cd)
+  end
+
+
+  def stop_moh
+    if qs && qs.moh
+      begin
+        qs.moh.stop!
+      rescue Punchblock::Component::InvalidActionError
+      end
+      qs.moh = nil
+    end
+  end
+
+
+  def execute_dial(cd)
+    cd.run self
+    stop_moh
+    cd.await_completion
+    cd.cleanup_calls
+
+    return cd.status
   end
 
 
@@ -137,11 +153,12 @@ class DefaultContext < Adhearsion::CallController
 
   def wait_for_next_agent_on
     raise TimeoutError if qs.tries > 2
-
     qs.tries += 1
     timeout   = 2 * dial_timeout
 
     Timeout::timeout(timeout) {
+      stop_moh
+      qs.moh = play! 'wimdu/songbirds'
       qs.agent = qs.queue.pop
     }
   end
