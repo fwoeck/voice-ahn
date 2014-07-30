@@ -80,9 +80,9 @@ class Call
       from   = from_a ? "SIP/#{from_a.name}" : "SIP/#{data['from']}" # TODO Can we add the fullname here?
       to     = "SIP/#{data['to']}"
 
-      Adhearsion::OutboundCall.originate(
-        from, from: to, controller: DirectContext
-      )
+      Adhearsion::OutboundCall.originate(from, from: to) do
+        dial to, from: from, for: 15.seconds
+      end
     end
 
 

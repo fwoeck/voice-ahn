@@ -113,7 +113,18 @@ class DefaultContext < Adhearsion::CallController
     wait_for_next_agent_on
     qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
   rescue TimeoutError, NoMethodError
-    qs.status = :timeout if qs
+     record_voice_memo
+  end
+
+
+  def record_voice_memo
+    return unless qs
+    qs.status = :timeout
+
+    stop_moh
+    play "wimdu/#{qs.lang}_leave_a_message"
+    result = record start_beep: true, max_duration: 60_000
+    logger.warn "Recording saved to #{result.recording_uri}"
   end
 
 
