@@ -194,10 +194,10 @@ class Call
 
 
     def detect_callers_for(hdr, call)
-      call.caller_id = hdr['CallerIDNum'] || hdr['CallerIDName'] || call.caller_id
+      call.caller_id ||= (hdr['CallerIDName'] || hdr['CallerIDNum'])
       call.caller_id.force_encoding('UTF-8')
 
-      call.called_at = call.called_at || current_time
+      call.called_at ||= current_time
     end
 
 
@@ -214,7 +214,7 @@ class Call
     # FIXME This doesn't work for agent-2-agent calls via direct_context:
     #
     def connected_line_from(hdr)
-      hdr['ConnectedLineNum'] || hdr['ConnectedLineName']
+      hdr['ConnectedLineName'] || hdr['ConnectedLineNum']
     end
 
 
