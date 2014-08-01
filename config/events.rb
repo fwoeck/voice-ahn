@@ -20,8 +20,6 @@ Adhearsion::Events.draw do
     if event.headers['Response'] == 'Success'
       Call.update_state_for(event)
     end
-
-    AmqpManager.numbers_publish(event)
   end
 
 
@@ -54,8 +52,8 @@ Adhearsion::Events.draw do
     end
 
     if agent_state && (agent = Agent.find_for event)
-      agent.update_state_to(agent_state) &&
-        AmqpManager.numbers_publish(event)
+      agent.update_state_to(agent_state)
+      AmqpManager.numbers_publish(event)
     end
   end
 
