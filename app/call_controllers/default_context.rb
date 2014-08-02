@@ -123,8 +123,9 @@ class DefaultContext < Adhearsion::CallController
 
     stop_moh
     play "wimdu/#{qs.lang}_leave_a_message"
+
     result = record start_beep: true, max_duration: 60_000
-    logger.warn "Recording saved to #{result.recording_uri}"
+    Call.set_mailbox(call_id, result.recording_uri[/[0-9a-f-]{10,}/])
   end
 
 

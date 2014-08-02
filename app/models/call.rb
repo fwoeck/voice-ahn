@@ -6,7 +6,7 @@ class Call
 
   attr_accessor :channel1, :channel2, :target_id, :language,
                 :called_at, :queued_at, :hungup_at, :dispatched_at,
-                :skill, :hungup, :caller_id, :conn_line
+                :skill, :hungup, :caller_id, :conn_line, :mailbox
 
 
   def initialize(par=nil)
@@ -14,6 +14,7 @@ class Call
       @target_id     = par.fetch(:target_id)
       @skill         = par.fetch(:skill, nil)
       @hungup        = par.fetch(:hungup, nil)
+      @mailbox       = par.fetch(:mailbox, nil)
       @language      = par.fetch(:language, nil)
       @channel1      = par.fetch(:channel1, nil)
       @channel2      = par.fetch(:channel2, nil)
@@ -29,9 +30,9 @@ class Call
 
   def headers
     {
-      'Channel1' => channel1,  'Channel2' => channel2,  'Language'     => language,     'Skill'    => skill,
-      'CallerId' => caller_id, 'Hungup'   => hungup,    'CalledAt'     => called_at,    'ConnLine' => conn_line,
-      'QueuedAt' => queued_at, 'HungupAt' => hungup_at, 'DispatchedAt' => dispatched_at
+      'Channel1' => channel1,  'Channel2' => channel2,  'Language'     => language,      'Skill'    => skill,
+      'CallerId' => caller_id, 'Hungup'   => hungup,    'CalledAt'     => called_at,     'ConnLine' => conn_line,
+      'QueuedAt' => queued_at, 'HungupAt' => hungup_at, 'DispatchedAt' => dispatched_at, 'Mailbox'  => mailbox
     }
   end
 
@@ -147,6 +148,13 @@ class Call
     end
 
 
+    def set_mailbox(tcid, mid)
+      call = find(tcid)
+      call.mailbox = mid
+      call.destroy
+    end
+
+
     def find(tcid)
       return unless tcid
       entry  = $redis.get(Call.key_name tcid) || new.headers.to_json
@@ -156,6 +164,7 @@ class Call
         target_id:     tcid,
         skill:         fields['Skill'],
         hungup:        fields['Hungup'],
+        mailbox:       fields['Mailbox'],
         hungup_at:     fields['HungupAt'],
         called_at:     fields['CalledAt'],
         caller_id:     fields['CallerId'],
@@ -211,8 +220,6 @@ class Call
     end
 
 
-    # FIXME This doesn't work for agent-2-agent calls via direct_context:
-    #
     def connected_line_from(hdr)
       hdr['ConnectedLineName'] || hdr['ConnectedLineNum']
     end
@@ -222,7 +229,7 @@ class Call
       tcid = event.target_call_id
       call = Call.find(tcid)
 
-      if call
+      if call && !call.hungup
         detect_callers_for(event.headers, call)
         detect_channels_for(event.headers, call)
         call.save
