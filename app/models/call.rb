@@ -151,7 +151,7 @@ class Call
     def set_mailbox(tcid, mid)
       call = find(tcid)
       call.mailbox = mid
-      call.save
+      call.destroy
     end
 
 
@@ -229,7 +229,7 @@ class Call
       tcid = event.target_call_id
       call = Call.find(tcid)
 
-      if call
+      if call && !call.hungup
         detect_callers_for(event.headers, call)
         detect_channels_for(event.headers, call)
         call.save
