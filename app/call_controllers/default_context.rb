@@ -125,7 +125,17 @@ class DefaultContext < Adhearsion::CallController
     play "wimdu/#{qs.lang}_leave_a_message"
 
     result = record start_beep: true, max_duration: 60_000
-    Call.set_mailbox(call_id, result.recording_uri[/[0-9a-f-]{10,}/])
+    postprocess_recording result.recording_uri
+  end
+
+
+  def postprocess_recording(uri)
+    rid = uri[/[0-9a-f-]{10,}/]
+
+    Call.set_mailbox(call_id, rid)
+    Thread.new {
+      system "sox --norm=-1 #{WimConfig.mp3_source}/#{rid}.wav -C 128.2 #{WimConfig.mp3_target}/#{rid}.mp3"
+    }
   end
 
 
