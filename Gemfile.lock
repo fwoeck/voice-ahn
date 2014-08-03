@@ -375,7 +375,7 @@ GEM
     rubysl-xmlrpc (2.0.0)
     rubysl-yaml (2.0.4)
     rubysl-zlib (2.0.1)
-    sequel (4.12.0)
+    sequel (4.13.0)
     sequella (1.1.0)
       adhearsion (~> 2.1)
       sequel (>= 3.40.0)
