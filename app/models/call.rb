@@ -53,7 +53,7 @@ class Call
     event = {
       'target_call_id' =>  target_id,
       'timestamp'      =>  Call.current_time_ms,
-      'name'           => 'CallUpdate',
+      'name'           => 'CallState',
       'headers'        =>  headers
     }
 

@@ -44,7 +44,7 @@ Adhearsion::Events.draw do
   ami name: 'Newstate' do |event|
     agent_state = nil
 
-    if ['4', '5', '6'].include?(event.headers['ChannelState'])
+    if ['5', '6'].include?(event.headers['ChannelState'])
       Call.update_state_for(event)
       agent_state = :talking
     elsif event.headers['ChannelState'] == '0'
