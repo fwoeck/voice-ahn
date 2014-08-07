@@ -1,5 +1,5 @@
 AgentRegistry = ThreadSafe::Hash.new
-ChannelRegex  = /^SIP.(\d+)/
+ChannelRegex  = /^SIP\/(\d+)/
 IdleTimeout   = 3
 
 
@@ -78,7 +78,55 @@ class Agent
   end
 
 
+  def headers(agent_up)
+    {
+      # TODO (un)registered and talking/silent should become
+      #      independent values:
+      #
+      'AgentState' => agent_state, 'Extension' => name,
+      'AgentUp'    => agent_up
+    }
+  end
+
+
+  def publish_to_numbers(tcid, agent_up)
+    event = {
+      'target_call_id' =>  tcid,
+      'timestamp'      =>  Call.current_time_ms,
+      'name'           => 'AgentEvent',
+      'headers'        =>  headers(agent_up)
+    }
+
+    AmqpManager.numbers_publish(event)
+  end
+
+
   class << self
+
+    def update_state_for(event)
+      agent = find_for(event)
+      hdr   = event.headers
+      atc   = agent_takes_call?(hdr)
+
+      state = if ['5', '6'].include?(hdr['ChannelState'])
+                :talking
+              elsif (hdr['ChannelState'] == '0') || (event.name == 'Hangup')
+                :registered
+              elsif hdr['PeerStatus']
+                hdr['PeerStatus'].downcase.to_sym
+              end
+
+      if agent && state && (atc || state != agent.agent_state)
+        agent.update_state_to(state)
+        agent.publish_to_numbers(event.target_call_id, atc)
+      end
+    end
+
+
+    def agent_takes_call?(hdr)
+      hdr['ChannelState'] == '6' && (hdr['ConnectedLineNum'] || "") != ""
+    end
+
 
     def all_ids
       AgentRegistry.keys.uniq

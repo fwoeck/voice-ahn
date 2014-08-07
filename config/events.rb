@@ -27,43 +27,22 @@ Adhearsion::Events.draw do
   # Has no Rayo-pendant:
   #
   ami name: 'PeerStatus' do |event|
-    agent     = Agent.find_for(event)
-    new_state = event.headers['PeerStatus'].downcase.to_sym
-
-    if agent
-      old_state = agent.agent_state
-
-      if old_state != :talking
-        agent.update_state_to(new_state) &&
-          AmqpManager.numbers_publish(event)
-      end
-    end
+    Agent.update_state_for(event)
   end
 
 
   ami name: 'Newstate' do |event|
-    agent_state = nil
-
-    if ['5', '6'].include?(event.headers['ChannelState'])
+    if ['0', '5', '6'].include?(event.headers['ChannelState'])
       Call.update_state_for(event)
-      agent_state = :talking
-    elsif event.headers['ChannelState'] == '0'
-      agent_state = :registered
-    end
-
-    if agent_state && (agent = Agent.find_for event)
-      agent.update_state_to(agent_state)
-      AmqpManager.numbers_publish(event)
+      Agent.update_state_for(event)
     end
   end
 
 
   ami name: 'Hangup' do |event|
-    Call.close_state_for(event)
-
-    if (agent = Agent.find_for event)
-      agent.update_state_to(:registered) &&
-        AmqpManager.numbers_publish(event)
+    if event.target_call_id
+      Call.close_state_for(event)
+      Agent.update_state_for(event)
     end
   end
 

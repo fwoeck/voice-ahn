@@ -224,12 +224,13 @@ class Call
 
     def update_state_for(event)
       tcid = event.target_call_id
+      hdr  = event.headers
       call = Call.find(tcid)
 
       if call && !call.hungup
-        detect_callers_for(event.headers, call)
-        detect_call_tag_for(event.headers, call)
-        detect_extension_for(event.headers, call)
+        detect_callers_for(hdr, call)
+        detect_call_tag_for(hdr, call)
+        detect_extension_for(hdr, call)
         call.save
       end
     end
