@@ -81,7 +81,8 @@ class Agent
   def headers(agent_up)
     {
       # TODO (un)registered and talking/silent should become
-      #      independent values:
+      #      independent values.
+      #      Also, AgentUp should be replaced by ringing/talking/silent:
       #
       'AgentState' => agent_state, 'Extension' => name,
       'AgentUp'    => agent_up
