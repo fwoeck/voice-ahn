@@ -27,7 +27,7 @@ Adhearsion::Events.draw do
   # Has no Rayo-pendant:
   #
   ami name: 'PeerStatus' do |event|
-    Agent.update_state_for(event)
+    Agent.update_registry_for(event)
   end
 
 
