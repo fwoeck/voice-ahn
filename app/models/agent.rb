@@ -1,11 +1,11 @@
 AgentRegistry = ThreadSafe::Hash.new
-ChannelRegex  = /^SIP.(\d+)/
+ChannelRegex  = /^SIP\/(\d+)/
 IdleTimeout   = 3
 
 
 class Agent
 
-  attr_accessor :id, :name, :languages, :skills, :roles, :agent_state,
+  attr_accessor :id, :name, :languages, :skills, :roles, :agent_state, :agent_reg,
                 :locked, :availability, :idle_since, :mutex, :unlock_scheduled
 
 
@@ -13,15 +13,15 @@ class Agent
     s = self
     s.id           = args[:id]
     s.name         = args[:name]
-    s.languages    = args[:languages]
-    s.skills       = args[:skills]
     s.roles        = args[:roles]
-    s.availability = args[:availability]
+    s.skills       = args[:skills]
+    s.languages    = args[:languages]
     s.idle_since   = args[:idle_since]
-
-    s.mutex        = Mutex.new
+    s.availability = args[:availability]
     s.agent_state  = args[:agent_state]
+    s.agent_reg    = args[:agent_reg]
     s.locked       = args[:locked]
+    s.mutex        = Mutex.new
   end
 
 
@@ -30,13 +30,32 @@ class Agent
   end
 
 
-  def update_state_to(state)
-    return unless state
+  def agent_reg_keyname
+    "#{WimConfig.rails_env}.agent_reg.#{self.id}"
+  end
+
+
+  def update_registry_to(reg)
+    return if !reg || reg == agent_reg
 
     self.mutex.synchronize {
-      update_internal_model(state) &&
-        persist_state_with(state)
+      update_internal_reg(reg) && persist_reg_with(reg)
     }
+  end
+
+
+  def update_state_to(state)
+    return if !state || state == agent_state
+
+    self.mutex.synchronize {
+      update_internal_state(state) && persist_state_with(state)
+    }
+  end
+
+
+  def persist_reg_with(reg)
+    $redis.set(self.agent_reg_keyname, reg)
+    return true
   end
 
 
@@ -46,7 +65,15 @@ class Agent
   end
 
 
-  def update_internal_model(new_state)
+  def update_internal_reg(new_reg)
+    if self.agent_reg != new_reg
+      self.agent_reg = new_reg
+      return true
+    end
+  end
+
+
+  def update_internal_state(new_state)
     if self.agent_state != new_state
       self.agent_state = new_state
       return true
@@ -61,7 +88,7 @@ class Agent
     Thread.new {
       sleep IdleTimeout
 
-      s.locked = false if agent_state != :talking
+      s.locked = false if agent_state == :silent
       s.unlock_scheduled = false
       s.idle_since = Time.now.utc
     }
@@ -69,16 +96,72 @@ class Agent
 
 
   def unlock_necessary?
-    !self.unlock_scheduled && agent_is_idle?
+    self.locked && !self.unlock_scheduled && agent_is_idle?
   end
 
 
   def agent_is_idle?
-    self.locked && agent_state == :registered
+    self.agent_state == :silent
+  end
+
+
+  def headers
+    {
+      'AgentState' => agent_state, 'Extension' => name, 'AgentReg' => agent_reg
+    }
+  end
+
+
+  def publish_to_numbers(tcid)
+    event = {
+      'target_call_id' =>  tcid,
+      'timestamp'      =>  Call.current_time_ms,
+      'name'           => 'AgentEvent',
+      'headers'        =>  headers
+    }
+
+    AmqpManager.numbers_publish(event)
   end
 
 
   class << self
+
+    def update_registry_for(event)
+      agent = find_for(event)
+      hdr   = event.headers
+      reg   = hdr['PeerStatus'].downcase.to_sym
+
+      if agent
+        agent.update_registry_to(reg) &&
+          agent.publish_to_numbers(event.target_call_id)
+      end
+    end
+
+
+    def update_state_for(event)
+      agent = find_for(event)
+      hdr   = event.headers
+      chan  = hdr['ChannelState']
+
+      state = if    chan == '5'
+                :ringing
+              elsif chan == '6'
+                :talking
+              elsif chan == '0' || event.name == 'Hangup'
+                :silent
+              end
+
+      if agent
+        agent.update_state_to(state) &&
+          agent.publish_to_numbers(event.target_call_id)
+      end
+    end
+
+
+    # def agent_takes_call?(hdr)
+    #   hdr['ChannelState'] == '6' && (hdr['ConnectedLineNum'] || "") != ""
+    # end
+
 
     def all_ids
       AgentRegistry.keys.uniq
@@ -123,7 +206,8 @@ class Agent
 
     def set_availability_scope(hash)
       hash[:locked]       =  false
-      hash[:agent_state]  = :registered
+      hash[:agent_reg]    = :registered
+      hash[:agent_state]  = :silent
       hash[:availability] = :ready
     end
 
