@@ -57,7 +57,7 @@ class Call
       'headers'        =>  headers
     }
 
-    AmqpManager.numbers_publish(event)
+    AmqpManager.publish(event)
   end
 
 

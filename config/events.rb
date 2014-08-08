@@ -54,22 +54,22 @@ Adhearsion::Events.draw do
   # end
 
   # ami name: 'Bridge' do |event|
-  #   AmqpManager.numbers_publish(event)
+  #   AmqpManager.publish(event)
   # end
 
   # ami name: 'NewCallerid' do |event|
-  #   AmqpManager.numbers_publish(event)
+  #   AmqpManager.publish(event)
   # end
 
   # ami name: 'OriginateResponse' do |event|
-  #   AmqpManager.numbers_publish(event)
+  #   AmqpManager.publish(event)
   # end
 
   # ami name: 'Newchannel' do |event|
-  #   AmqpManager.numbers_publish(event)
+  #   AmqpManager.publish(event)
   # end
 
   # ami name: 'SoftHangupRequest' do |event|
-  #   AmqpManager.numbers_publish(event)
+  #   AmqpManager.publish(event)
   # end
 end

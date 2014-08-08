@@ -5,6 +5,15 @@ module AmqpManager
 
   class << self
 
+    def rails_channel
+      Thread.current[:rails_channel] ||= @connection.create_channel
+    end
+
+    def rails_xchange
+      Thread.current[:rails_xchange] ||= rails_channel.topic('voice.rails', auto_delete: false)
+    end
+
+
     def numbers_channel
       Thread.current[:numbers_channel] ||= @connection.create_channel
     end
@@ -13,9 +22,13 @@ module AmqpManager
       Thread.current[:numbers_xchange] ||= numbers_channel.topic('voice.numbers', auto_delete: false)
     end
 
-    def numbers_publish(payload)
+
+    def publish(payload)
       sanitize_encoding_for(payload)
-      numbers_xchange.publish(payload.to_json, routing_key: 'voice.numbers')
+      data = payload.to_json
+
+      rails_xchange.publish(data, routing_key: 'voice.rails')
+      numbers_xchange.publish(data, routing_key: 'voice.numbers')
     end
 
 

@@ -120,7 +120,7 @@ class Agent
       'headers'        =>  headers
     }
 
-    AmqpManager.numbers_publish(event)
+    AmqpManager.publish(event)
   end
 
 
@@ -156,11 +156,6 @@ class Agent
           agent.publish_to_numbers(event.target_call_id)
       end
     end
-
-
-    # def agent_takes_call?(hdr)
-    #   hdr['ChannelState'] == '6' && (hdr['ConnectedLineNum'] || "") != ""
-    # end
 
 
     def all_ids
