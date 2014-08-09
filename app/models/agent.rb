@@ -5,7 +5,7 @@ IdleTimeout   = 3
 
 class Agent
 
-  attr_accessor :id, :name, :languages, :skills, :roles, :agent_state, :agent_reg,
+  attr_accessor :id, :name, :languages, :skills, :roles, :agent_state, :visibility,
                 :locked, :availability, :idle_since, :mutex, :unlock_scheduled
 
 
@@ -19,7 +19,7 @@ class Agent
     s.idle_since   = args[:idle_since]
     s.availability = args[:availability]
     s.agent_state  = args[:agent_state]
-    s.agent_reg    = args[:agent_reg]
+    s.visibility   = args[:visibility]
     s.locked       = args[:locked]
     s.mutex        = Mutex.new
   end
@@ -30,17 +30,26 @@ class Agent
   end
 
 
-  def agent_reg_keyname
-    "#{WimConfig.rails_env}.agent_reg.#{self.id}"
+  def visibility_keyname
+    "#{WimConfig.rails_env}.visibility.#{self.id}"
   end
 
 
-  def update_registry_to(reg)
-    return if !reg || reg == agent_reg
+  def interpolate_setter_from(key)
+    # This adds an 's' to all names, not ending on 'y':
+    "#{key}#{key[/y\z/] ? '' : 's'}="
+  end
 
-    self.mutex.synchronize {
-      update_internal_reg(reg) && persist_reg_with(reg)
-    }
+
+  def update_settings_to(key, value)
+    setter = interpolate_setter_from(key)
+    self.send setter, (value[/,/] ? value.split(',') : value.to_sym)
+
+    if key == 'visibility'
+      persist_visibility_with(value)
+      publish
+    end
+    Adhearsion.logger.info "Update #{id}'s setting: #{setter}'#{value}'"
   end
 
 
@@ -53,23 +62,14 @@ class Agent
   end
 
 
-  def persist_reg_with(reg)
-    $redis.set(self.agent_reg_keyname, reg)
-    return true
+  def persist_visibility_with(vis)
+    $redis.set(self.visibility_keyname, vis)
   end
 
 
   def persist_state_with(state)
     $redis.set(self.agent_state_keyname, state)
     return true
-  end
-
-
-  def update_internal_reg(new_reg)
-    if self.agent_reg != new_reg
-      self.agent_reg = new_reg
-      return true
-    end
   end
 
 
@@ -107,12 +107,14 @@ class Agent
 
   def headers
     {
-      'AgentState' => agent_state, 'Extension' => name, 'AgentReg' => agent_reg
+      'AgentState' => agent_state,
+      'Visibility' => visibility,
+      'Extension'  => name
     }
   end
 
 
-  def publish_to_numbers(tcid)
+  def publish(tcid=nil)
     event = {
       'target_call_id' =>  tcid,
       'timestamp'      =>  Call.current_time_ms,
@@ -125,18 +127,6 @@ class Agent
 
 
   class << self
-
-    def update_registry_for(event)
-      agent = find_for(event)
-      hdr   = event.headers
-      reg   = hdr['PeerStatus'].downcase.to_sym
-
-      if agent
-        agent.update_registry_to(reg) &&
-          agent.publish_to_numbers(event.target_call_id)
-      end
-    end
-
 
     def update_state_for(event)
       agent = find_for(event)
@@ -153,7 +143,7 @@ class Agent
 
       if agent
         agent.update_state_to(state) &&
-          agent.publish_to_numbers(event.target_call_id)
+          agent.publish(event.target_call_id)
       end
     end
 
@@ -201,7 +191,7 @@ class Agent
 
     def set_availability_scope(hash)
       hash[:locked]       =  false
-      hash[:agent_reg]    = :registered
+      hash[:visibility]   = :online
       hash[:agent_state]  = :silent
       hash[:availability] = :ready
     end
@@ -228,22 +218,13 @@ class Agent
     end
 
 
-    # The redisDB entries have already been set by VR,
-    # so we just have to update our memory model:
-    #
     def update_client_settings_with(data)
       uid, key, value = get_agent_value_pair(data)
+      agent = AgentRegistry[uid]
 
-      if uid > 0 && key
-        setter = "#{key}#{key[/y\z/] ? '' : 's'}="
-        update_user_setting(setter, value, uid)
+      if agent && key
+        agent.update_settings_to(key, value)
       end
-    end
-
-
-    def update_user_setting(setter, value, uid)
-      AgentRegistry[uid].send setter, (value[/,/] ? value.split(',') : value.to_sym)
-      Adhearsion.logger.info "Update #{uid}'s setting: #{setter}'#{value}'"
     end
 
 

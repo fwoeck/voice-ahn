@@ -38,7 +38,7 @@ class Call
 
   def save(expires=3.hours)
     $redis.set(Call.key_name(target_id), headers.to_json, ex: expires)
-    publish_to_numbers
+    publish
   end
 
 
@@ -49,7 +49,7 @@ class Call
   end
 
 
-  def publish_to_numbers
+  def publish
     event = {
       'target_call_id' =>  target_id,
       'timestamp'      =>  Call.current_time_ms,

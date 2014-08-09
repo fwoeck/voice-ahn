@@ -26,9 +26,9 @@ Adhearsion::Events.draw do
   # See adhearsion-xmpp for agent availability-states
   # Has no Rayo-pendant:
   #
-  ami name: 'PeerStatus' do |event|
-    Agent.update_registry_for(event)
-  end
+  # ami name: 'PeerStatus' do |event|
+  #   Agent.update_registry_for(event)
+  # end
 
 
   ami name: 'Newstate' do |event|

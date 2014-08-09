@@ -21,8 +21,8 @@ class User < Sequel::Model
   end
 
 
-  def agent_reg_keyname
-    "#{WimConfig.rails_env}.agent_reg.#{self.id}"
+  def visibility_keyname
+    "#{WimConfig.rails_env}.visibility.#{self.id}"
   end
 
 
@@ -36,15 +36,14 @@ class User < Sequel::Model
   end
 
 
-  def agent_reg
-    @memo_agent_reg ||= ($redis.get(agent_reg_keyname) || :unknown)
+  def visibility
+    @memo_visibility ||= ($redis.get(visibility_keyname) || :offline)
   end
 
 
   def self.fetch_all_agents
     all.each do |user|
       $redis.set(user.agent_state_keyname, :silent)
-      $redis.set(user.agent_reg_keyname, :unknown)
       build_from(user)
     end
 
@@ -63,7 +62,7 @@ class User < Sequel::Model
       idle_since:   Time.now.utc,
       roles:        u.roles.map(&:name),
       skills:       u.skills.map(&:name),
-      agent_reg:    u.agent_reg.to_sym,
+      visibility:   u.visibility.to_sym,
       agent_state:  u.agent_state.to_sym,
       availability: u.availability.to_sym,
       languages:    u.languages.map(&:name)
