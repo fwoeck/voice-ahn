@@ -23,14 +23,6 @@ Adhearsion::Events.draw do
   end
 
 
-  # See adhearsion-xmpp for agent availability-states
-  # Has no Rayo-pendant:
-  #
-  # ami name: 'PeerStatus' do |event|
-  #   Agent.update_registry_for(event)
-  # end
-
-
   ami name: 'Newstate' do |event|
     if ['0', '5', '6'].include?(event.headers['ChannelState'])
       Call.update_state_for(event)
@@ -46,6 +38,13 @@ Adhearsion::Events.draw do
     end
   end
 
+
+  # See adhearsion-xmpp for agent availability-states
+  # Has no Rayo-pendant:
+  #
+  # ami name: 'PeerStatus' do |event|
+  #   Agent.update_registry_for(event)
+  # end
 
   # ! This emits Rayo-Events
   #
