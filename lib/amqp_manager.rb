@@ -28,7 +28,9 @@ module AmqpManager
       data = payload.to_json
 
       rails_xchange.publish(data, routing_key: 'voice.rails')
-      numbers_xchange.publish(data, routing_key: 'voice.numbers')
+      if payload['name'] == 'CallState'
+        numbers_xchange.publish(data, routing_key: 'voice.numbers')
+      end
     end
 
 
