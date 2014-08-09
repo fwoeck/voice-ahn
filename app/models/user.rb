@@ -16,8 +16,8 @@ class User < Sequel::Model
   end
 
 
-  def agent_state_keyname
-    "#{WimConfig.rails_env}.agent_state.#{self.id}"
+  def activity_keyname
+    "#{WimConfig.rails_env}.activity.#{self.id}"
   end
 
 
@@ -31,8 +31,8 @@ class User < Sequel::Model
   end
 
 
-  def agent_state
-    @memo_agent_state ||= ($redis.get(agent_state_keyname) || :silent)
+  def activity
+    @memo_activity ||= ($redis.get(activity_keyname) || :silent)
   end
 
 
@@ -43,7 +43,7 @@ class User < Sequel::Model
 
   def self.fetch_all_agents
     all.each do |user|
-      $redis.set(user.agent_state_keyname, :silent)
+      $redis.set(user.activity_keyname, :silent)
       build_from(user)
     end
 
@@ -62,8 +62,8 @@ class User < Sequel::Model
       idle_since:   Time.now.utc,
       roles:        u.roles.map(&:name),
       skills:       u.skills.map(&:name),
+      activity:     u.activity.to_sym,
       visibility:   u.visibility.to_sym,
-      agent_state:  u.agent_state.to_sym,
       availability: u.availability.to_sym,
       languages:    u.languages.map(&:name)
     )

@@ -5,7 +5,7 @@ IdleTimeout   = 3
 
 class Agent
 
-  attr_accessor :id, :name, :languages, :skills, :roles, :agent_state, :visibility,
+  attr_accessor :id, :name, :languages, :skills, :roles, :activity, :visibility,
                 :locked, :availability, :idle_since, :mutex, :unlock_scheduled
 
 
@@ -18,15 +18,15 @@ class Agent
     s.languages    = args[:languages]
     s.idle_since   = args[:idle_since]
     s.availability = args[:availability]
-    s.agent_state  = args[:agent_state]
     s.visibility   = args[:visibility]
+    s.activity     = args[:activity]
     s.locked       = args[:locked]
     s.mutex        = Mutex.new
   end
 
 
-  def agent_state_keyname
-    "#{WimConfig.rails_env}.agent_state.#{self.id}"
+  def activity_keyname
+    "#{WimConfig.rails_env}.activity.#{self.id}"
   end
 
 
@@ -53,11 +53,11 @@ class Agent
   end
 
 
-  def update_state_to(state)
-    return if !state || state == agent_state
+  def update_activity_to(act)
+    return if !act || act == activity
 
     self.mutex.synchronize {
-      update_internal_state(state) && persist_state_with(state)
+      update_internal_activity(act) && persist_activity_with(act)
     }
   end
 
@@ -67,15 +67,15 @@ class Agent
   end
 
 
-  def persist_state_with(state)
-    $redis.set(self.agent_state_keyname, state)
+  def persist_activity_with(act)
+    $redis.set(self.activity_keyname, act)
     return true
   end
 
 
-  def update_internal_state(new_state)
-    if self.agent_state != new_state
-      self.agent_state = new_state
+  def update_internal_activity(new_act)
+    if self.activity != new_act
+      self.activity = new_act
       return true
     end
   end
@@ -88,7 +88,7 @@ class Agent
     Thread.new {
       sleep IdleTimeout
 
-      s.locked = false if agent_state == :silent
+      s.locked = false if activity == :silent
       s.unlock_scheduled = false
       s.idle_since = Time.now.utc
     }
@@ -101,13 +101,13 @@ class Agent
 
 
   def agent_is_idle?
-    self.agent_state == :silent
+    self.activity == :silent
   end
 
 
   def headers
     {
-      'AgentState' => agent_state,
+      'Activity'   => activity,
       'Visibility' => visibility,
       'Extension'  => name
     }
@@ -133,16 +133,16 @@ class Agent
       hdr   = event.headers
       chan  = hdr['ChannelState']
 
-      state = if    chan == '5'
-                :ringing
-              elsif chan == '6'
-                :talking
-              elsif chan == '0' || event.name == 'Hangup'
-                :silent
-              end
+      act = if chan == '5'
+              :ringing
+            elsif chan == '6'
+              :talking
+            elsif chan == '0' || event.name == 'Hangup'
+              :silent
+            end
 
       if agent
-        agent.update_state_to(state) &&
+        agent.update_activity_to(act) &&
           agent.publish(event.target_call_id)
       end
     end
@@ -191,8 +191,8 @@ class Agent
 
     def set_availability_scope(hash)
       hash[:locked]       =  false
+      hash[:activity]     = :silent
       hash[:visibility]   = :online
-      hash[:agent_state]  = :silent
       hash[:availability] = :ready
     end
 
