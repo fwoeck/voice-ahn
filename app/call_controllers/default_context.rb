@@ -55,15 +55,9 @@ class DefaultContext < Adhearsion::CallController
 
   def choose_a_language
     input = ask 'wimdu/en_choose_a_language', timeout: 5, limit: 1
+    digit = (input.utterance || '0').to_i
 
-    case input.utterance
-      when '1'; 'de'
-      when '2'; 'en'
-      when '3'; 'es'
-      when '4'; 'fr'
-      when '5'; 'it'
-      else 'en'
-    end
+    WimConfig.language_menu.fetch(digit, WimConfig.language_menu['d'])
   end
 
 
@@ -78,23 +72,19 @@ class DefaultContext < Adhearsion::CallController
       tries += 1
     end
 
-    case input.utterance
-      when '1'; 'new_booking'
-      when '2'; 'ext_booking'
-      when '3'; 'payment'
-      when '4'; 'other'
-      else 'other'
-    end
+    digit = (input.utterance || '0').to_i
+    WimConfig.skill_menu.fetch(digit, WimConfig.skill_menu['d'])
   end
 
 
   def user_entered_skill?(tries, input)
-    input && ['1', '2', '3', '4'].include?(input.utterance)
+    keys = WimConfig.skill_menu.keys.map(&:to_s)
+    input && keys.include?(input.utterance)
   end
 
 
   def dial_timeout
-    call.from[/SIP.100/] ? 5 : 15
+    call.from[/SIP.100/] ? 5 : 15 # Reduce timeout for test ext. 100
   end
 
 
