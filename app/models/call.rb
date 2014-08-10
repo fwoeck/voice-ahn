@@ -75,13 +75,23 @@ class Call
     end
 
 
-    def originate(data)
-      from_a = User.where(name: data['from']).first
-      from   = from_a ? "SIP/#{from_a.name}" : "SIP/#{data['from']}" # TODO Can we add the fullname here?
-      to     = "SIP/#{data['to']}"
+    def call_to_trunk?(data)
+      data['to'].length > 4
+    end
 
+
+    def originate(data)
+      from = "SIP/#{data['from']}"
+      to   = "SIP/#{data['to']}"
+      to   = "#{data['to']} <#{to}@sipconnect.sipgate.de>" if call_to_trunk?(data)
+
+      # FIXME Transfer of a call originated by us will fail, because
+      #       a controller is needed to store the metadata:
+      #
       Adhearsion::OutboundCall.originate(from, from: to) do
-        dial to, from: from, for: 15.seconds
+        opts = {for: 15.seconds}
+        opts[:from] = from unless call_to_trunk?(data)
+        dial to, opts
       end
     end
 
