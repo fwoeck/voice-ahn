@@ -228,7 +228,10 @@ class Call
       chan1 = hdr['Channel1'] || hdr['Channel']
       chan2 = hdr['Channel2']
 
-      call.call_tag = "#{chan1}_#{chan2}" if chan2
+      if chan2
+        call.call_tag = "#{chan1}_#{chan2}"
+        call.dispatched_at ||= current_time
+      end
     end
 
 

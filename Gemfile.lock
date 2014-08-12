@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 8b327a66573a4670b97fd1cd979e023d683c4c45
+  revision: 14b7c2a9e262e65cd99191157c34d2ff225274a7
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -40,7 +40,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/punchblock.git
-  revision: 3679c988a5bd96b572f25a17b6e6a6ec1cadecc9
+  revision: e08d6c457a91a538851ff50eeb80d3ca5cec4dbb
   branch: develop
   specs:
     punchblock (2.5.2)
@@ -59,7 +59,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/ruby_ami.git
-  revision: 525caa7a6969c85d686e5524c85378d829096ea1
+  revision: 9adadce01ba81e30521a6ee1d81ef89ca3d99123
   branch: develop
   specs:
     ruby_ami (2.2.1)
@@ -387,7 +387,7 @@ GEM
     thread_safe (0.3.4)
     thread_safe (0.3.4-java)
     timers (1.1.0)
-    tzinfo (1.2.1)
+    tzinfo (1.2.2)
       thread_safe (~> 0.1)
     virtus (1.0.3)
       axiom-types (~> 0.1)
