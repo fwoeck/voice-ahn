@@ -110,6 +110,7 @@ class DefaultContext < Adhearsion::CallController
   def record_voice_memo
     return unless qs
     qs.status = :timeout
+    Call.set_dispatched_at(call_id)
 
     stop_moh
     play "wimdu/#{qs.lang}_leave_a_message"

@@ -150,6 +150,13 @@ class Call
     end
 
 
+    def set_dispatched_at(tcid)
+      call = find(tcid)
+      call.dispatched_at = current_time
+      call.save
+    end
+
+
     def set_queued_at(tcid)
       call = find(tcid)
       call.queued_at = current_time
