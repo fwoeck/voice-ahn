@@ -89,7 +89,7 @@ class Call
       #       a controller is needed to store the metadata:
       #
       Adhearsion::OutboundCall.originate(from, from: to) do
-        opts = {for: 15.seconds}
+        opts = {for: DialTimeout.seconds}
         opts[:from] = from unless call_to_trunk?(data)
         dial to, opts
       end
