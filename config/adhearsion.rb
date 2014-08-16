@@ -4,9 +4,8 @@ Adhearsion.config do |config|
     env.platform.logging.level = :warn
   end
 
-
   config.development do |env|
-    env.platform.logging.level = :error
+    env.platform.logging.level = :info
   end
 
 
