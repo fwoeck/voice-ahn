@@ -83,11 +83,6 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
-  def dial_timeout
-    call.from[/SIP.100/] ? 5 : 15 # Reduce timeout for test ext. 100
-  end
-
-
   def queue_and_handle_call(lang, skill)
     self.qs = get_queue_struct_for(lang, skill)
 
@@ -101,15 +96,16 @@ class DefaultContext < Adhearsion::CallController
 
   def dial_to_next_agent
     wait_for_next_agent_on
-    qs.status = dial_to qs.agent.name, for: dial_timeout.seconds
+    qs.status = dial_to qs.agent.name, for: DialTimeout.seconds
   rescue TimeoutError, NoMethodError
-     record_voice_memo
+    record_voice_memo
   end
 
 
   def record_voice_memo
     return unless qs
     qs.status = :timeout
+    Call.set_dispatched_at(call_id)
 
     stop_moh
     play "wimdu/#{qs.lang}_leave_a_message"
@@ -166,7 +162,7 @@ class DefaultContext < Adhearsion::CallController
   def wait_for_next_agent_on
     raise TimeoutError if qs.tries > 2
     qs.tries += 1
-    timeout   = 2 * dial_timeout
+    timeout   = 2 * DialTimeout
 
     Timeout::timeout(timeout) {
       stop_moh

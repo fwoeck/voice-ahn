@@ -13,7 +13,8 @@ require 'active_support/all'
 Time.zone = 'Etc/UTC'
 I18n.enforce_available_locales = false
 
-WimConfig = YAML.load_file('./config/app.yml')
+DialTimeout = 15
+WimConfig   = YAML.load_file('./config/app.yml')
 WimConfig.keys.each { |key|
   WimConfig.instance_eval "class << self; define_method(:#{key}) {self['#{key}']}; end"
 }

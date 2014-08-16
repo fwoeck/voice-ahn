@@ -174,12 +174,6 @@ class Agent
     end
 
 
-    def checkin(agent_id)
-      agent = AgentRegistry[agent_id]
-      agent.locked = false
-    end
-
-
     def where(hash)
       set_availability_scope(hash)
       keys = hash.keys
