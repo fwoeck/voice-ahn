@@ -5,7 +5,7 @@ IdleTimeout   = 3
 
 class Agent
 
-  attr_accessor :id, :name, :languages, :skills, :roles, :activity, :visibility,
+  attr_accessor :id, :name, :languages, :skills, :activity, :visibility,
                 :locked, :availability, :idle_since, :mutex, :unlock_scheduled
 
 
@@ -13,7 +13,6 @@ class Agent
     s = self
     s.id           = args[:id]
     s.name         = args[:name]
-    s.roles        = args[:roles]
     s.skills       = args[:skills]
     s.languages    = args[:languages]
     s.idle_since   = args[:idle_since]

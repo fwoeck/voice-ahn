@@ -3,7 +3,6 @@ Dir['./app/models/*.rb'].each { |f| require f }
 
 class User < Sequel::Model
 
-  one_to_many :roles
   one_to_many :skills
   one_to_many :languages
 
@@ -60,7 +59,6 @@ class User < Sequel::Model
       locked:       false,
       name:         u.name,
       idle_since:   Time.now.utc,
-      roles:        u.roles.map(&:name),
       skills:       u.skills.map(&:name),
       activity:     u.activity.to_sym,
       visibility:   u.visibility.to_sym,
