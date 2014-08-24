@@ -40,31 +40,29 @@ class User < Sequel::Model
   end
 
 
-  def self.fetch_all_agents
-    all.each do |user|
-      $redis.set(user.activity_keyname, :silent)
-      build_from(user)
-    end
+  def build_agent
+    $redis.set(activity_keyname, :silent)
 
+    AgentRegistry[id] = Agent.new(
+      id:           id,
+      locked:       false,
+      name:         name,
+      idle_since:   Time.now.utc,
+      skills:       skills.map(&:name),
+      activity:     activity.to_sym,
+      visibility:   visibility.to_sym,
+      availability: availability.to_sym,
+      languages:    languages.map(&:name)
+    )
+  end
+
+
+  def self.fetch_all_agents
+    all.each { |user| user.build_agent }
     @@ready = true
   rescue Redis::CannotConnectError
     sleep 1
     retry
-  end
-
-
-  def self.build_from(u)
-    AgentRegistry[u.id] ||= Agent.new(
-      id:           u.id,
-      locked:       false,
-      name:         u.name,
-      idle_since:   Time.now.utc,
-      skills:       u.skills.map(&:name),
-      activity:     u.activity.to_sym,
-      visibility:   u.visibility.to_sym,
-      availability: u.availability.to_sym,
-      languages:    u.languages.map(&:name)
-    )
   end
 
 

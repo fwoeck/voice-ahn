@@ -217,7 +217,30 @@ class Agent
 
       if agent && key
         agent.update_settings_to(key, value)
+      else
+        synch_agent_from_db(agent, uid)
       end
+    end
+
+
+    def synch_agent_from_db(agent, uid)
+      name = nil
+
+      if (db_user = User[uid])
+        name = db_user.name
+        db_user.build_agent
+      elsif agent
+        name = agent.name
+        AgentRegistry.delete uid
+      end
+
+      reload_asterisk_sip_peer(name)
+    end
+
+
+    def reload_asterisk_sip_peer(name)
+      return unless name
+      system("sudo asterisk -rx 'sip prune realtime #{name}'")
     end
 
 
