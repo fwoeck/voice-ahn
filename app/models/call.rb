@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'json'
 
 class Call
@@ -39,6 +40,11 @@ class Call
   def save(expires=3.hours)
     $redis.set(Call.key_name(target_id), headers.to_json, ex: expires)
     publish
+  rescue JSON::GeneratorError, Encoding::UndefinedConversionError
+    # FIXME The callerId's encoding is ASCII when coming from the event.
+    #       When the it contains UTF-8 chars, this leads to malformed strings.
+    #
+    Adhearsion.logger.error "An encoding-error happened for #{headers}"
   end
 
 
@@ -219,8 +225,6 @@ class Call
 
     def detect_callers_for(hdr, call)
       call.caller_id ||= (hdr['CallerIDName'] || hdr['CallerIDNum'])
-      call.caller_id.force_encoding('UTF-8')
-
       call.called_at ||= current_time
     end
 
