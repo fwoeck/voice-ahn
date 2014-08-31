@@ -227,8 +227,8 @@ class Call
       return if call.caller_id
 
       num = hdr['CallerIDNum']
-      num = nil if num.blank? || num == 'Anonymous'
-      num = "SIP/#{num}" if num && num[/^\d\d\d\d?$/]
+      num = nil if (num.blank? || num == 'Anonymous')
+      num = "SIP/#{num}" if (num && num[/^\d\d\d\d?$/])
 
       call.caller_id = num || hdr['CallerIDName']
       call.called_at = current_time
