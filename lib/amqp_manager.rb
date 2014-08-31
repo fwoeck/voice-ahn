@@ -24,23 +24,11 @@ module AmqpManager
 
 
     def publish(payload)
-      sanitize_encoding_for(payload)
       data = payload.to_json
-
       rails_xchange.publish(data, routing_key: 'voice.rails')
+
       if payload['name'] == 'CallState'
         numbers_xchange.publish(data, routing_key: 'voice.numbers')
-      end
-    end
-
-
-    def sanitize_encoding_for(payload)
-      return unless payload['headers']
-
-      payload['headers'].keys.each do |key|
-        if payload['headers'][key].is_a?(String)
-          payload['headers'][key].force_encoding('UTF-8')
-        end
       end
     end
 
