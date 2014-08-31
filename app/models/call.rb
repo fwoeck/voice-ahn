@@ -224,14 +224,25 @@ class Call
 
 
     def detect_callers_for(hdr, call)
-      call.caller_id ||= (hdr['CallerIDName'] || hdr['CallerIDNum'])
-      call.called_at ||= current_time
+      return if call.caller_id
+
+      num = hdr['CallerIDNum']
+      num = nil if num.blank? || num == 'Anonymous'
+      num = "SIP/#{num}" if num && num[/^\d\d\d\d?$/]
+
+      call.caller_id = num || hdr['CallerIDName']
+      call.called_at = current_time
     end
 
 
     def detect_extension_for(hdr, call)
+      return if call.extension
+
       chan = hdr['Channel1'] || hdr['Channel'] || ""
-      call.extension ||= (chan[ChannelRegex, 1] || '0')
+      ext  = chan[ChannelRegex, 1] || '0'
+      ext  = '0' if ext == WimConfig.admin_name
+
+      call.extension = ext
     end
 
 
