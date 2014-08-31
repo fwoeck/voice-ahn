@@ -1,5 +1,5 @@
 AgentRegistry = ThreadSafe::Hash.new
-ChannelRegex  = /^SIP\/(\d\d\d\d?)$/
+ChannelRegex  = /^SIP\/(\d\d\d\d?)/
 IdleTimeout   = 3
 
 
