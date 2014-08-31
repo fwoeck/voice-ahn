@@ -224,7 +224,11 @@ class Call
 
 
     def detect_callers_for(hdr, call)
-      call.caller_id ||= (hdr['CallerIDName'] || hdr['CallerIDNum'])
+      num = hdr['CallerIDNum']
+      num = nil if (num.blank? || num == 'Anonymous')
+      num = "SIP/#{num}" if num && num[/^\d\d\d\d?$/]
+
+      call.caller_id ||= (num || hdr['CallerIDName'])
       call.called_at ||= current_time
     end
 
