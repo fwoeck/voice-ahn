@@ -34,15 +34,23 @@ class Agent
   end
 
 
+  # FIXME This fails if an array field-name ends with a "y":
+  #
+  def key_contains_array?(key)
+    !key[/y$/]
+  end
+
+
   def interpolate_setter_from(key)
-    # This adds an 's' to all names, not ending on 'y':
-    "#{key}#{key[/y\z/] ? '' : 's'}="
+    "#{key}#{key_contains_array?(key) ? 's' : ''}="
   end
 
 
   def update_settings_to(key, value)
     setter = interpolate_setter_from(key)
-    self.send setter, (value[/,/] ? value.split(',') : value.to_sym)
+    self.send setter, (
+      key_contains_array?(key) ? value.split(',') : value.to_sym
+    )
 
     if key == 'visibility'
       persist_visibility_with(value)
