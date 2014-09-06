@@ -89,16 +89,16 @@ GEM
     bundler-unload (1.0.2)
     bunny (1.4.0)
       amq-protocol (>= 1.9.2)
-    celluloid (0.16.0)
-      timers (~> 4.0.0)
-    celluloid-io (0.16.0)
-      celluloid (>= 0.16.0)
-      nio4r (>= 1.0.0)
+    celluloid (0.15.2)
+      timers (~> 1.1.0)
+    celluloid-io (0.15.0)
+      celluloid (>= 0.15.0)
+      nio4r (>= 0.5.0)
     coderay (1.1.0)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     colorize (0.7.3)
-    connection_pool (2.0.0)
+    connection_pool (1.2.0)
     countdownlatch (1.0.0)
     deep_merge (1.0.1)
     descendants_tracker (0.0.4)
@@ -112,13 +112,13 @@ GEM
     ffi (1.9.3-java)
     ffi2-generators (0.1.1)
     future-resource (1.1.0)
-    girl_friday (0.9.5)
+    girl_friday (0.11.2)
+      connection_pool (~> 1.0)
+      rubinius-actor
     git-smart (0.1.10)
       colorize
     has-guarded-handlers (1.6.0)
     hirb (0.7.2)
-    hitimes (1.2.2)
-    hitimes (1.2.2-java)
     i18n (0.6.11)
     ice_nine (0.11.0)
     jdbc-mysql (5.1.31)
@@ -163,6 +163,10 @@ GEM
     rspec-mocks (3.1.0)
       rspec-support (~> 3.1.0)
     rspec-support (3.1.0)
+    rubinius-actor (0.0.2)
+      rubinius-core-api
+    rubinius-core-api (0.0.1)
+    rubinius-core-api (0.0.1-java)
     ruby_fs (1.1.1)
       celluloid-io (~> 0.13)
     ruby_jid (1.0.0)
@@ -388,8 +392,7 @@ GEM
     thor (0.18.1)
     thread_safe (0.3.4)
     thread_safe (0.3.4-java)
-    timers (4.0.0)
-      hitimes
+    timers (1.1.0)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     virtus (1.0.3)
@@ -409,6 +412,7 @@ DEPENDENCIES
   adhearsion-asr!
   adhearsion-asterisk!
   bunny
+  celluloid (= 0.15.2)
   connection_pool
   git-smart
   hirb
