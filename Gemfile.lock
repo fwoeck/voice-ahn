@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 634b3f6485d294acd07804e8c05d881fa442e883
+  revision: 4b2f7f7960bd994ca8aea8012327ef3978f8f045
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -40,7 +40,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/punchblock.git
-  revision: e08d6c457a91a538851ff50eeb80d3ca5cec4dbb
+  revision: f94d0ebcfefe1b5dbcfcdc0f3c333fff1fa03456
   branch: develop
   specs:
     punchblock (2.5.2)
@@ -89,11 +89,11 @@ GEM
     bundler-unload (1.0.2)
     bunny (1.4.0)
       amq-protocol (>= 1.9.2)
-    celluloid (0.15.2)
-      timers (~> 1.1.0)
-    celluloid-io (0.15.0)
-      celluloid (>= 0.15.0)
-      nio4r (>= 0.5.0)
+    celluloid (0.16.0)
+      timers (~> 4.0.0)
+    celluloid-io (0.16.0)
+      celluloid (>= 0.16.0)
+      nio4r (>= 1.0.0)
     coderay (1.1.0)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
@@ -117,6 +117,8 @@ GEM
       colorize
     has-guarded-handlers (1.6.0)
     hirb (0.7.2)
+    hitimes (1.2.2)
+    hitimes (1.2.2-java)
     i18n (0.6.11)
     ice_nine (0.11.0)
     jdbc-mysql (5.1.31)
@@ -133,8 +135,8 @@ GEM
     mysql2 (0.3.16)
     niceogiri (1.1.2)
       nokogiri (~> 1.5)
-    nio4r (1.0.0)
-    nio4r (1.0.0-java)
+    nio4r (1.0.1)
+    nio4r (1.0.1-java)
     nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
     nokogiri (1.6.3.1-java)
@@ -149,18 +151,18 @@ GEM
       spoon (~> 0.0)
     rake (10.3.2)
     redis (3.1.0)
-    rspec (3.0.0)
-      rspec-core (~> 3.0.0)
-      rspec-expectations (~> 3.0.0)
-      rspec-mocks (~> 3.0.0)
-    rspec-core (3.0.4)
-      rspec-support (~> 3.0.0)
-    rspec-expectations (3.0.4)
+    rspec (3.1.0)
+      rspec-core (~> 3.1.0)
+      rspec-expectations (~> 3.1.0)
+      rspec-mocks (~> 3.1.0)
+    rspec-core (3.1.1)
+      rspec-support (~> 3.1.0)
+    rspec-expectations (3.1.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.0.0)
-    rspec-mocks (3.0.4)
-      rspec-support (~> 3.0.0)
-    rspec-support (3.0.4)
+      rspec-support (~> 3.1.0)
+    rspec-mocks (3.1.0)
+      rspec-support (~> 3.1.0)
+    rspec-support (3.1.0)
     ruby_fs (1.1.1)
       celluloid-io (~> 0.13)
     ruby_jid (1.0.0)
@@ -375,7 +377,7 @@ GEM
     rubysl-xmlrpc (2.0.0)
     rubysl-yaml (2.0.4)
     rubysl-zlib (2.0.1)
-    sequel (4.13.0)
+    sequel (4.14.0)
     sequella (1.1.0)
       adhearsion (~> 2.1)
       sequel (>= 3.40.0)
@@ -386,7 +388,8 @@ GEM
     thor (0.18.1)
     thread_safe (0.3.4)
     thread_safe (0.3.4-java)
-    timers (1.1.0)
+    timers (4.0.0)
+      hitimes
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     virtus (1.0.3)
