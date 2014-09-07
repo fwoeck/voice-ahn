@@ -14,6 +14,15 @@ module AmqpManager
     end
 
 
+    def custom_channel
+      Thread.current[:custom_channel] ||= @connection.create_channel
+    end
+
+    def custom_xchange
+      Thread.current[:custom_xchange] ||= custom_channel.topic('voice.custom', auto_delete: false)
+    end
+
+
     def numbers_channel
       Thread.current[:numbers_channel] ||= @connection.create_channel
     end
@@ -28,6 +37,7 @@ module AmqpManager
       rails_xchange.publish(data, routing_key: 'voice.rails')
 
       if payload['name'] == 'CallState'
+        custom_xchange.publish(data,  routing_key: 'voice.custom')
         numbers_xchange.publish(data, routing_key: 'voice.numbers')
       end
     end
