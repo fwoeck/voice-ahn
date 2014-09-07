@@ -3,24 +3,24 @@ require 'json'
 
 class Call
   FORMAT = %w{target_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
-           .each_with_object({}) { |key, hash| hash[key.camelize] = key.to_sym }
+           .map(&:to_sym)
 
-  attr_accessor *FORMAT.values
+  attr_accessor *FORMAT
 
   Queues = ThreadSafe::Hash.new
   extend Keynames
 
 
   def initialize(par=nil)
-    Call::FORMAT.values.each do |sym|
+    Call::FORMAT.each do |sym|
       self.send "#{sym}=", par.fetch(sym, nil)
     end if par
   end
 
 
   def headers
-    Call::FORMAT.keys.each_with_object({}) { |key, hash|
-      hash[key] = self.send(Call::FORMAT[key])
+    Call::FORMAT.each_with_object({}) { |sym, hash|
+      hash[sym.to_s.camelize] = self.send(sym)
     }
   end
 
@@ -52,6 +52,47 @@ class Call
     }
 
     AmqpManager.publish(event)
+  end
+
+
+  def update_state_for(hdr)
+    detect_callers_for(hdr)
+    detect_call_tag_for(hdr)
+    detect_extension_for(hdr)
+    save
+  end
+
+
+  def detect_callers_for(hdr)
+    return if self.caller_id
+
+    num = hdr['CallerIDNum']
+    num = nil if (num.blank? || num == 'Anonymous')
+
+    self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '')
+    self.called_at = Call.current_time
+  end
+
+
+  def detect_call_tag_for(hdr)
+    chan1 = hdr['Channel1'] || hdr['Channel']
+    chan2 = hdr['Channel2']
+
+    if chan2
+      self.call_tag = "#{chan1}_#{chan2}"
+      self.dispatched_at ||= Call.current_time
+    end
+  end
+
+
+  def detect_extension_for(hdr)
+    return if self.extension
+
+    chan = hdr['Channel1'] || hdr['Channel'] || ""
+    ext  = chan[ChannelRegex, 1] || '0'
+    ext  = '0' if ext == WimConfig.admin_name
+
+    self.extension = ext
   end
 
 
@@ -130,38 +171,30 @@ class Call
     end
 
 
+    # TODO These should be calling instance methods:
+    #
     def set_language_for(tcid, lang)
-      call = find(tcid)
-      call.language = lang
-      call.save
+      find(tcid).tap { |c| c.language = lang }.save
     end
 
 
     def set_skill_for(tcid, skill)
-      call = find(tcid)
-      call.skill = skill
-      call.save
+      find(tcid).tap { |c| c.skill = skill }.save
     end
 
 
     def set_dispatched_at(tcid)
-      call = find(tcid)
-      call.dispatched_at = current_time
-      call.save
+      find(tcid).tap { |c| c.dispatched_at = current_time }.save
     end
 
 
     def set_queued_at(tcid)
-      call = find(tcid)
-      call.queued_at = current_time
-      call.save
+      find(tcid).tap { |c| c.queued_at = current_time }.save
     end
 
 
     def set_mailbox(tcid, mid)
-      call = find(tcid)
-      call.mailbox = mid
-      call.destroy
+      find(tcid).tap { |c| c.mailbox = mid }.destroy
     end
 
 
@@ -170,19 +203,9 @@ class Call
       fields = JSON.parse(Redis.current.get(Call.call_keyname tcid) || new.headers.to_json)
       fields['TargetId'] = tcid
 
-      new Call::FORMAT.keys.each_with_object({}) { |key, hash|
-        hash[Call::FORMAT[key]] = fields[key]
+      new Call::FORMAT.each_with_object({}) { |sym, hash|
+        hash[sym] = fields[sym.to_s.camelize]
       }
-    end
-
-
-    def current_time
-      Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S+00:00")
-    end
-
-
-    def current_time_ms
-      Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%L+00:00")
     end
 
 
@@ -193,49 +216,13 @@ class Call
     end
 
 
-    def detect_callers_for(hdr, call)
-      return if call.caller_id
-
-      num = hdr['CallerIDNum']
-      num = nil if (num.blank? || num == 'Anonymous')
-
-      call.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '')
-      call.called_at = current_time
-    end
-
-
-    def detect_extension_for(hdr, call)
-      return if call.extension
-
-      chan = hdr['Channel1'] || hdr['Channel'] || ""
-      ext  = chan[ChannelRegex, 1] || '0'
-      ext  = '0' if ext == WimConfig.admin_name
-
-      call.extension = ext
-    end
-
-
-    def detect_call_tag_for(hdr, call)
-      chan1 = hdr['Channel1'] || hdr['Channel']
-      chan2 = hdr['Channel2']
-
-      if chan2
-        call.call_tag = "#{chan1}_#{chan2}"
-        call.dispatched_at ||= current_time
-      end
-    end
-
-
     def update_state_for(event)
       tcid = event.target_call_id
       hdr  = event.headers
       call = Call.find(tcid)
 
       if call && !call.hungup
-        detect_callers_for(hdr, call)
-        detect_call_tag_for(hdr, call)
-        detect_extension_for(hdr, call)
-        call.save
+        call.update_state_for(hdr)
       end
     end
 
