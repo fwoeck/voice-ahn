@@ -11,6 +11,7 @@ gem 'activesupport'
 gem 'adhearsion-asr',      github: 'adhearsion/adhearsion-asr',      branch: 'develop'
 gem 'connection_pool'
 gem 'adhearsion-asterisk', github: 'adhearsion/adhearsion-asterisk', branch: 'develop'
+gem 'celluloid', '0.15.2' # 0.16.0 is not yet supported by ahn
 
 platforms :ruby do
   gem 'mysql2'

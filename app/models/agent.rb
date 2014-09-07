@@ -1,9 +1,12 @@
+require './app/models/keynames'
+
 AgentRegistry = ThreadSafe::Hash.new
 ChannelRegex  = /^SIP\/(\d\d\d\d?)/
 IdleTimeout   = 3
 
 
 class Agent
+  include Keynames
 
   attr_accessor :id, :name, :languages, :skills, :activity, :visibility,
                 :locked, :availability, :idle_since, :mutex, :unlock_scheduled
@@ -21,16 +24,6 @@ class Agent
     s.activity     = args[:activity]
     s.locked       = args[:locked]
     s.mutex        = Mutex.new
-  end
-
-
-  def activity_keyname
-    "#{WimConfig.rails_env}.activity.#{self.id}"
-  end
-
-
-  def visibility_keyname
-    "#{WimConfig.rails_env}.visibility.#{self.id}"
   end
 
 
@@ -70,12 +63,16 @@ class Agent
 
 
   def persist_visibility_with(vis)
-    $redis.set(self.visibility_keyname, vis)
+    if vis.to_sym == :online
+      Redis.current.sadd(online_users_keyname, id)
+    else
+      Redis.current.srem(online_users_keyname, id)
+    end
   end
 
 
   def persist_activity_with(act)
-    $redis.set(self.activity_keyname, act)
+    Redis.current.set(activity_keyname, act, ex: 1.week)
     return true
   end
 
@@ -95,7 +92,7 @@ class Agent
     Thread.new {
       sleep IdleTimeout
 
-      s.locked = false if activity == :silent
+      s.locked = false if agent_is_idle?
       s.unlock_scheduled = false
       s.idle_since = Time.now.utc
     }
@@ -140,23 +137,30 @@ class Agent
       hdr   = event.headers
       chan  = hdr['ChannelState']
 
-      act = if chan == '5'
-              :ringing
-            elsif chan == '6'
-              :talking
-            elsif chan == '0' || event.name == 'Hangup'
-              :silent
+      act = case chan
+              when '5' then :ringing
+              when '6' then :talking
+              else :silent
             end
 
-      if agent
-        agent.update_activity_to(act) &&
-          agent.publish(event.target_call_id)
-      end
+      update_activity_for(agent, act, event.target_call_id)
+    end
+
+
+    def update_activity_for(agent, act, tcid)
+      return unless agent
+      agent.update_activity_to(act) && agent.publish(tcid)
+    end
+
+
+    def close_state_for(event)
+      agent = find_for(event)
+      update_activity_for(agent, :silent, event.target_call_id)
     end
 
 
     def all_ids
-      AgentRegistry.keys.uniq
+      AgentRegistry.keys
     end
 
 

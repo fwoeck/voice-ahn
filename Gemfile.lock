@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 634b3f6485d294acd07804e8c05d881fa442e883
+  revision: 4b2f7f7960bd994ca8aea8012327ef3978f8f045
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -40,7 +40,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/punchblock.git
-  revision: e08d6c457a91a538851ff50eeb80d3ca5cec4dbb
+  revision: f94d0ebcfefe1b5dbcfcdc0f3c333fff1fa03456
   branch: develop
   specs:
     punchblock (2.5.2)
@@ -98,7 +98,7 @@ GEM
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     colorize (0.7.3)
-    connection_pool (2.0.0)
+    connection_pool (1.2.0)
     countdownlatch (1.0.0)
     deep_merge (1.0.1)
     descendants_tracker (0.0.4)
@@ -112,7 +112,9 @@ GEM
     ffi (1.9.3-java)
     ffi2-generators (0.1.1)
     future-resource (1.1.0)
-    girl_friday (0.9.5)
+    girl_friday (0.11.2)
+      connection_pool (~> 1.0)
+      rubinius-actor
     git-smart (0.1.10)
       colorize
     has-guarded-handlers (1.6.0)
@@ -133,8 +135,8 @@ GEM
     mysql2 (0.3.16)
     niceogiri (1.1.2)
       nokogiri (~> 1.5)
-    nio4r (1.0.0)
-    nio4r (1.0.0-java)
+    nio4r (1.0.1)
+    nio4r (1.0.1-java)
     nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
     nokogiri (1.6.3.1-java)
@@ -149,18 +151,22 @@ GEM
       spoon (~> 0.0)
     rake (10.3.2)
     redis (3.1.0)
-    rspec (3.0.0)
-      rspec-core (~> 3.0.0)
-      rspec-expectations (~> 3.0.0)
-      rspec-mocks (~> 3.0.0)
-    rspec-core (3.0.4)
-      rspec-support (~> 3.0.0)
-    rspec-expectations (3.0.4)
+    rspec (3.1.0)
+      rspec-core (~> 3.1.0)
+      rspec-expectations (~> 3.1.0)
+      rspec-mocks (~> 3.1.0)
+    rspec-core (3.1.1)
+      rspec-support (~> 3.1.0)
+    rspec-expectations (3.1.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.0.0)
-    rspec-mocks (3.0.4)
-      rspec-support (~> 3.0.0)
-    rspec-support (3.0.4)
+      rspec-support (~> 3.1.0)
+    rspec-mocks (3.1.0)
+      rspec-support (~> 3.1.0)
+    rspec-support (3.1.0)
+    rubinius-actor (0.0.2)
+      rubinius-core-api
+    rubinius-core-api (0.0.1)
+    rubinius-core-api (0.0.1-java)
     ruby_fs (1.1.1)
       celluloid-io (~> 0.13)
     ruby_jid (1.0.0)
@@ -375,7 +381,7 @@ GEM
     rubysl-xmlrpc (2.0.0)
     rubysl-yaml (2.0.4)
     rubysl-zlib (2.0.1)
-    sequel (4.13.0)
+    sequel (4.14.0)
     sequella (1.1.0)
       adhearsion (~> 2.1)
       sequel (>= 3.40.0)
@@ -406,6 +412,7 @@ DEPENDENCIES
   adhearsion-asr!
   adhearsion-asterisk!
   bunny
+  celluloid (= 0.15.2)
   connection_pool
   git-smart
   hirb
