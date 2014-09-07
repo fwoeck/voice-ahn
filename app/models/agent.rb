@@ -189,7 +189,7 @@ class Agent
       set_availability_scope(hash)
       keys = hash.keys
 
-      assert (keys.map(&:to_s) - WimConfig.keys) == [], hash
+      assert (keys.map(&:to_s) - AhnConfig.keys) == [], hash
       filtered_agent_ids(keys, hash)
     end
 

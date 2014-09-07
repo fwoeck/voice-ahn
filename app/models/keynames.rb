@@ -1,7 +1,7 @@
 module Keynames
 
   def availability_keyname
-    "#{WimConfig.rails_env}.availability.#{self.id}"
+    "#{AhnConfig.rails_env}.availability.#{self.id}"
   end
 
 
@@ -11,7 +11,7 @@ module Keynames
 
 
   def activity_keyname
-    "#{WimConfig.rails_env}.activity.#{self.id}"
+    "#{AhnConfig.rails_env}.activity.#{self.id}"
   end
 
 
@@ -21,17 +21,17 @@ module Keynames
 
 
   def online_users_keyname
-    "#{WimConfig.rails_env}.online-users"
+    "#{AhnConfig.rails_env}.online-users"
   end
 
 
   def call_keyname(tcid)
-    "#{WimConfig.rails_env}.call.#{tcid}"
+    "#{AhnConfig.rails_env}.call.#{tcid}"
   end
 
 
   def call_keypattern
-    "#{WimConfig.rails_env}.call.*"
+    "#{AhnConfig.rails_env}.call.*"
   end
 
 

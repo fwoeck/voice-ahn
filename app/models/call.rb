@@ -90,7 +90,7 @@ class Call
 
     chan = hdr['Channel1'] || hdr['Channel'] || ""
     ext  = chan[ChannelRegex, 1] || '0'
-    ext  = '0' if ext == WimConfig.admin_name
+    ext  = '0' if ext == AhnConfig.admin_name
 
     self.extension = ext
   end
