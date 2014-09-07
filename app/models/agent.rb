@@ -70,12 +70,12 @@ class Agent
 
 
   def persist_visibility_with(vis)
-    $redis.set(self.visibility_keyname, vis)
+    Redis.current.set(self.visibility_keyname, vis)
   end
 
 
   def persist_activity_with(act)
-    $redis.set(self.activity_keyname, act)
+    Redis.current.set(self.activity_keyname, act)
     return true
   end
 

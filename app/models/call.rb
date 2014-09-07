@@ -38,7 +38,7 @@ class Call
 
 
   def save(expires=3.hours)
-    $redis.set(Call.key_name(target_id), headers.to_json, ex: expires)
+    Redis.current.set(Call.key_name(target_id), headers.to_json, ex: expires)
     publish
   rescue JSON::GeneratorError, Encoding::UndefinedConversionError
     # FIXME The callerId's encoding is ASCII when coming from the event.
@@ -179,7 +179,7 @@ class Call
 
     def find(tcid)
       return unless tcid
-      entry  = $redis.get(Call.key_name tcid) || new.headers.to_json
+      entry  = Redis.current.get(Call.key_name tcid) || new.headers.to_json
       fields = JSON.parse entry
 
       par = {
@@ -271,7 +271,7 @@ class Call
 
 
     def clear_all_redis_calls
-      $redis.keys("#{WimConfig.rails_env}.call.*").each { |key| $redis.del(key) }
+      Redis.current.keys("#{WimConfig.rails_env}.call.*").each { |key| Redis.current.del(key) }
     rescue Redis::CannotConnectError
       sleep 1
       retry

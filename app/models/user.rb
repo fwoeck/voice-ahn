@@ -26,22 +26,22 @@ class User < Sequel::Model
 
 
   def availability
-    @memo_availability ||= ($redis.get(availability_keyname) || :unknown)
+    @memo_availability ||= (Redis.current.get(availability_keyname) || :unknown)
   end
 
 
   def activity
-    @memo_activity ||= ($redis.get(activity_keyname) || :silent)
+    @memo_activity ||= (Redis.current.get(activity_keyname) || :silent)
   end
 
 
   def visibility
-    @memo_visibility ||= ($redis.get(visibility_keyname) || :offline)
+    @memo_visibility ||= (Redis.current.get(visibility_keyname) || :offline)
   end
 
 
   def build_agent
-    $redis.set(activity_keyname, :silent)
+    Redis.current.set(activity_keyname, :silent)
 
     AgentRegistry[id] = Agent.new(
       id:           id,
