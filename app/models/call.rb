@@ -2,43 +2,31 @@
 require 'json'
 
 class Call
+  FORMAT = %w{target_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
+           .each_with_object({}) { |key, hash| hash[key.camelize] = key.to_sym }
+
+  attr_accessor *FORMAT.values
 
   Queues = ThreadSafe::Hash.new
-
-  attr_accessor :call_tag, :target_id, :language, :extension,
-                :called_at, :queued_at, :hungup_at, :dispatched_at,
-                :skill, :hungup, :caller_id, :mailbox
+  extend Keynames
 
 
   def initialize(par=nil)
-    if par
-      @target_id     = par.fetch(:target_id)
-      @skill         = par.fetch(:skill, nil)
-      @hungup        = par.fetch(:hungup, nil)
-      @mailbox       = par.fetch(:mailbox, nil)
-      @language      = par.fetch(:language, nil)
-      @call_tag      = par.fetch(:call_tag, nil)
-      @called_at     = par.fetch(:called_at, nil)
-      @caller_id     = par.fetch(:caller_id, nil)
-      @hungup_at     = par.fetch(:hungup_at, nil)
-      @queued_at     = par.fetch(:queued_at, nil)
-      @extension     = par.fetch(:extension, nil)
-      @dispatched_at = par.fetch(:dispatched_at, nil)
-    end
+    Call::FORMAT.values.each do |sym|
+      self.send "#{sym}=", par.fetch(sym, nil)
+    end if par
   end
 
 
   def headers
-    {
-      'CallTag'  => call_tag,  'Language' => language,  'Skill'        => skill,     'Extension' => extension,
-      'CallerId' => caller_id, 'Hungup'   => hungup,    'CalledAt'     => called_at, 'Mailbox'   => mailbox,
-      'QueuedAt' => queued_at, 'HungupAt' => hungup_at, 'DispatchedAt' => dispatched_at
+    Call::FORMAT.keys.each_with_object({}) { |key, hash|
+      hash[key] = self.send(Call::FORMAT[key])
     }
   end
 
 
   def save(expires=3.hours)
-    Redis.current.set(Call.key_name(target_id), headers.to_json, ex: expires)
+    Redis.current.set(Call.call_keyname(target_id), headers.to_json, ex: expires)
     publish
   rescue JSON::GeneratorError, Encoding::UndefinedConversionError
     # FIXME The callerId's encoding is ASCII when coming from the event.
@@ -179,30 +167,12 @@ class Call
 
     def find(tcid)
       return unless tcid
-      entry  = Redis.current.get(Call.key_name tcid) || new.headers.to_json
-      fields = JSON.parse entry
+      fields = JSON.parse(Redis.current.get(Call.call_keyname tcid) || new.headers.to_json)
+      fields['TargetId'] = tcid
 
-      par = {
-        target_id:     tcid,
-        skill:         fields['Skill'],
-        hungup:        fields['Hungup'],
-        mailbox:       fields['Mailbox'],
-        call_tag:      fields['CallTag'],
-        hungup_at:     fields['HungupAt'],
-        called_at:     fields['CalledAt'],
-        caller_id:     fields['CallerId'],
-        language:      fields['Language'],
-        queued_at:     fields['QueuedAt'],
-        extension:     fields['Extension'],
-        dispatched_at: fields['DispatchedAt']
+      new Call::FORMAT.keys.each_with_object({}) { |key, hash|
+        hash[Call::FORMAT[key]] = fields[key]
       }
-
-      new(par)
-    end
-
-
-    def key_name(tcid)
-      "#{WimConfig.rails_env}.call.#{tcid}"
     end
 
 
@@ -271,7 +241,7 @@ class Call
 
 
     def clear_all_redis_calls
-      Redis.current.keys("#{WimConfig.rails_env}.call.*").each { |key| Redis.current.del(key) }
+      Redis.current.keys(call_keypattern).each { |key| Redis.current.del(key) }
     rescue Redis::CannotConnectError
       sleep 1
       retry
