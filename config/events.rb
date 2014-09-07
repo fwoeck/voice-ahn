@@ -34,7 +34,7 @@ Adhearsion::Events.draw do
   ami name: 'Hangup' do |event|
     if event.target_call_id
       Call.close_state_for(event)
-      Agent.update_state_for(event)
+      Agent.close_state_for(event)
     end
   end
 

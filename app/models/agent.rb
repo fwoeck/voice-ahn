@@ -137,23 +137,30 @@ class Agent
       hdr   = event.headers
       chan  = hdr['ChannelState']
 
-      act = if chan == '5'
-              :ringing
-            elsif chan == '6'
-              :talking
-            elsif chan == '0' || event.name == 'Hangup'
-              :silent
+      act = case chan
+              when '5' then :ringing
+              when '6' then :talking
+              else :silent
             end
 
-      if agent
-        agent.update_activity_to(act) &&
-          agent.publish(event.target_call_id)
-      end
+      update_activity_for(agent, act, event.target_call_id)
+    end
+
+
+    def update_activity_for(agent, act, tcid)
+      return unless agent
+      agent.update_activity_to(act) && agent.publish(tcid)
+    end
+
+
+    def close_state_for(event)
+      agent = find_for(event)
+      update_activity_for(agent, :silent, event.target_call_id)
     end
 
 
     def all_ids
-      AgentRegistry.keys.uniq
+      AgentRegistry.keys
     end
 
 
