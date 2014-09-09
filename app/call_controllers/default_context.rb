@@ -57,7 +57,7 @@ class DefaultContext < Adhearsion::CallController
     input = ask 'wimdu/en_choose_a_language', timeout: 5, limit: 1
     digit = (input.utterance || '0').to_i
 
-    WimConfig.language_menu.fetch(digit, WimConfig.language_menu['d'])
+    AhnConfig.language_menu.fetch(digit, AhnConfig.language_menu['d'])
   end
 
 
@@ -73,12 +73,12 @@ class DefaultContext < Adhearsion::CallController
     end
 
     digit = (input.utterance || '0').to_i
-    WimConfig.skill_menu.fetch(digit, WimConfig.skill_menu['d'])
+    AhnConfig.skill_menu.fetch(digit, AhnConfig.skill_menu['d'])
   end
 
 
   def user_entered_skill?(tries, input)
-    keys = WimConfig.skill_menu.keys.map(&:to_s)
+    keys = AhnConfig.skill_menu.keys.map(&:to_s)
     input && keys.include?(input.utterance)
   end
 
@@ -120,7 +120,7 @@ class DefaultContext < Adhearsion::CallController
 
     Call.set_mailbox(call_id, rid)
     Thread.new {
-      system "sox --norm=-1 #{WimConfig.mp3_source}/#{rid}.wav -C 128.2 #{WimConfig.mp3_target}/#{rid}.mp3"
+      system "sox --norm=-1 #{AhnConfig.mp3_source}/#{rid}.wav -C 128.2 #{AhnConfig.mp3_target}/#{rid}.mp3"
     }
   end
 

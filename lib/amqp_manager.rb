@@ -14,6 +14,15 @@ module AmqpManager
     end
 
 
+    def custom_channel
+      Thread.current[:custom_channel] ||= @connection.create_channel
+    end
+
+    def custom_xchange
+      Thread.current[:custom_xchange] ||= custom_channel.topic('voice.custom', auto_delete: false)
+    end
+
+
     def numbers_channel
       Thread.current[:numbers_channel] ||= @connection.create_channel
     end
@@ -23,13 +32,34 @@ module AmqpManager
     end
 
 
-    def publish(payload)
+    def publish_call(payload)
       data = payload.to_json
-      rails_xchange.publish(data, routing_key: 'voice.rails')
 
-      if payload['name'] == 'CallState'
-        numbers_xchange.publish(data, routing_key: 'voice.numbers')
-      end
+      rails_xchange.publish(data,   routing_key: 'voice.rails')
+      custom_xchange.publish(data,  routing_key: 'voice.custom') if mailbox_message?(payload)
+      numbers_xchange.publish(data, routing_key: 'voice.numbers')
+    end
+
+
+    def publish_agent(payload)
+      data = payload.to_json
+
+      rails_xchange.publish(data,  routing_key: 'voice.rails')
+      custom_xchange.publish(data, routing_key: 'voice.custom') if agent_takes_call?(payload)
+    end
+
+
+    # FIXME These filters shouldn't be here. Can we write
+    #       more specific publish-methods?
+    #
+    def mailbox_message?(payload)
+      !payload['headers']['Mailbox'].blank?
+    end
+    #
+    #
+    def agent_takes_call?(payload)
+      payload['headers']['Activity'] == :talking &&
+        payload['headers']['Extension'] != AhnConfig.admin_name
     end
 
 
@@ -53,9 +83,9 @@ module AmqpManager
 
     def establish_connection
       @connection = Bunny.new(
-        host:     WimConfig.rabbit_host,
-        user:     WimConfig.rabbit_user,
-        password: WimConfig.rabbit_pass
+        host:     AhnConfig.rabbit_host,
+        user:     AhnConfig.rabbit_user,
+        password: AhnConfig.rabbit_pass
       ).tap { |c| c.start }
     rescue Bunny::TCPConnectionFailed
       sleep 1
