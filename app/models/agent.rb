@@ -126,7 +126,7 @@ class Agent
       'headers'        =>  headers
     }
 
-    AmqpManager.publish(event)
+    AmqpManager.publish_agent(event)
   end
 
 
