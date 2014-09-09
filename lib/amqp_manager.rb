@@ -33,7 +33,7 @@ module AmqpManager
 
 
     def publish_call(payload)
-      data = payload.to_json
+      data = Marshal.dump(payload)
 
       rails_xchange.publish(data,   routing_key: 'voice.rails')
       custom_xchange.publish(data,  routing_key: 'voice.custom') if mailbox_message?(payload)
@@ -42,7 +42,7 @@ module AmqpManager
 
 
     def publish_agent(payload)
-      data = payload.to_json
+      data = Marshal.dump(payload)
 
       rails_xchange.publish(data,  routing_key: 'voice.rails')
       custom_xchange.publish(data, routing_key: 'voice.custom') if agent_takes_call?(payload)
@@ -98,11 +98,11 @@ module AmqpManager
       ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
 
       ahn_queue.subscribe { |delivery_info, metadata, payload|
-        data = JSON.parse(payload)
+        data = Marshal.load(payload)
 
-        if data['user_id']
+        if data[:user_id]
           Agent.update_client_settings_with(data)
-        elsif data['command']
+        elsif data[:command]
           Call.execute_command_with(data)
         end
       }

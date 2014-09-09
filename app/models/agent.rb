@@ -257,7 +257,7 @@ class Agent
 
 
     def get_agent_value_pair(data)
-      uid = data.delete('user_id').to_i
+      uid = data.delete(:user_id).to_i
       key = data.keys.first
 
       [uid, key, data[key]]

@@ -26,13 +26,8 @@ class Call
 
 
   def save(expires=3.hours)
-    Redis.current.set(Call.call_keyname(target_id), headers.to_json, ex: expires)
+    Redis.current.set(Call.call_keyname(target_id), Marshal.dump(headers), ex: expires)
     publish
-  rescue JSON::GeneratorError, Encoding::UndefinedConversionError
-    # FIXME The callerId's encoding is ASCII when coming from the event.
-    #       When the it contains UTF-8 chars, this leads to malformed strings.
-    #
-    Adhearsion.logger.error "An encoding-error happened for #{headers}"
   end
 
 
@@ -99,26 +94,26 @@ class Call
   class << self
 
     def execute_command_with(data)
-      case data['command']
-      when 'hangup'
+      case data[:command]
+      when :hangup
         hangup(data)
-      when 'transfer'
+      when :transfer
         transfer(data)
-      when 'originate'
+      when :originate
         originate(data)
       end
     end
 
 
     def call_to_trunk?(data)
-      data['to'].length > 4
+      data[:to].length > 4
     end
 
 
     def originate(data)
-      from = "SIP/#{data['from']}"
-      to   = "SIP/#{data['to']}"
-      to   = "#{data['to']} <#{to}@sipconnect.sipgate.de>" if call_to_trunk?(data)
+      from = "SIP/#{data[:from]}"
+      to   = "SIP/#{data[:to]}"
+      to   = "#{data[:to]} <#{to}@sipconnect.sipgate.de>" if call_to_trunk?(data)
 
       # FIXME Transfer of a call originated by us will fail, because
       #       a controller is needed to store the metadata:
@@ -136,7 +131,7 @@ class Call
       call.auto_hangup = false
 
       cdial = call.controllers.first.metadata['current_dial']
-      execute_transfer(call, cdial, data['to'])
+      execute_transfer(call, cdial, data[:to])
     end
 
 
@@ -166,7 +161,7 @@ class Call
 
 
     def find_ahn_call_for(data)
-      cid = data['call_id']
+      cid = data[:call_id]
       Adhearsion.active_calls.values.find { |c| c.id == cid }
     end
 
@@ -200,7 +195,7 @@ class Call
 
     def find(tcid)
       return unless tcid
-      fields = JSON.parse(Redis.current.get(Call.call_keyname tcid) || new.headers.to_json)
+      fields = Marshal.load(Redis.current.get(Call.call_keyname tcid) || Marshal.dump(new.headers))
       fields['TargetId'] = tcid
 
       new Call::FORMAT.each_with_object({}) { |sym, hash|
