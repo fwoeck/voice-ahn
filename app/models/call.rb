@@ -40,10 +40,10 @@ class Call
 
   def publish
     event = {
-      'target_call_id' =>  target_id,
-      'timestamp'      =>  Call.current_time_ms,
-      'name'           => 'CallState',
-      'headers'        =>  headers
+      target_call_id: target_id,
+      timestamp:      Call.current_time_ms,
+      name:          'CallState',
+      headers:        headers
     }
 
     AmqpManager.publish_call(event)

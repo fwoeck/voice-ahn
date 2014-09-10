@@ -45,7 +45,7 @@ class Agent
       key_contains_array?(key) ? value.split(',') : value.to_sym
     )
 
-    if key == 'visibility'
+    if key == :visibility
       persist_visibility_with(value)
       publish
     end
@@ -63,7 +63,7 @@ class Agent
 
 
   def persist_visibility_with(vis)
-    if vis.to_sym == :online
+    if vis == :online
       Redis.current.sadd(online_users_keyname, id)
     else
       Redis.current.srem(online_users_keyname, id)
@@ -110,20 +110,19 @@ class Agent
 
 
   def headers
-    {
-      'Activity'   => activity,
-      'Visibility' => visibility,
-      'Extension'  => name
+    { activity:   activity,
+      visibility: visibility,
+      extension:  name
     }
   end
 
 
   def publish(tcid=nil)
     event = {
-      'target_call_id' =>  tcid,
-      'timestamp'      =>  Call.current_time_ms,
-      'name'           => 'AgentEvent',
-      'headers'        =>  headers
+      target_call_id: tcid,
+      timestamp:      Call.current_time_ms,
+      name:          'AgentEvent',
+      headers:        headers
     }
 
     AmqpManager.publish_agent(event)

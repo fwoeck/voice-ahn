@@ -53,13 +53,13 @@ module AmqpManager
     #       more specific publish-methods?
     #
     def mailbox_message?(payload)
-      !payload['headers']['Mailbox'].blank?
+      !payload[:headers]['Mailbox'].blank?
     end
     #
     #
     def agent_takes_call?(payload)
-      payload['headers']['Activity'] == :talking &&
-        payload['headers']['Extension'] != AhnConfig.admin_name
+      payload[:headers][:activity] == :talking &&
+        payload[:headers][:extension] != AhnConfig.admin_name
     end
 
 
