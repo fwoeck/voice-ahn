@@ -32,34 +32,12 @@ module AmqpManager
     end
 
 
-    def publish_call(payload)
+    def publish(payload, include_custom, include_numbers)
       data = Marshal.dump(payload)
 
       rails_xchange.publish(data,   routing_key: 'voice.rails')
-      custom_xchange.publish(data,  routing_key: 'voice.custom') if mailbox_message?(payload)
-      numbers_xchange.publish(data, routing_key: 'voice.numbers')
-    end
-
-
-    def publish_agent(payload)
-      data = Marshal.dump(payload)
-
-      rails_xchange.publish(data,  routing_key: 'voice.rails')
-      custom_xchange.publish(data, routing_key: 'voice.custom') if agent_takes_call?(payload)
-    end
-
-
-    # FIXME These filters shouldn't be here. Can we write
-    #       more specific publish-methods?
-    #
-    def mailbox_message?(payload)
-      !payload[:headers]['Mailbox'].blank?
-    end
-    #
-    #
-    def agent_takes_call?(payload)
-      payload[:headers][:activity] == :talking &&
-        payload[:headers][:extension] != AhnConfig.admin_name
+      custom_xchange.publish(data,  routing_key: 'voice.custom')  if include_custom
+      numbers_xchange.publish(data, routing_key: 'voice.numbers') if include_numbers
     end
 
 
