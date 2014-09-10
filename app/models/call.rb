@@ -46,7 +46,12 @@ class Call
       headers:        headers
     }
 
-    AmqpManager.publish_call(event)
+    AmqpManager.publish(event, mailbox_message?(event), true)
+  end
+
+
+  def mailbox_message?(event)
+    !event[:headers]['Mailbox'].blank?
   end
 
 

@@ -125,7 +125,13 @@ class Agent
       headers:        headers
     }
 
-    AmqpManager.publish_agent(event)
+    AmqpManager.publish(event, agent_takes_call?(event), false)
+  end
+
+
+  def agent_takes_call?(event)
+    event[:headers][:activity] == :talking &&
+      event[:headers][:extension] != AhnConfig.admin_name
   end
 
 
