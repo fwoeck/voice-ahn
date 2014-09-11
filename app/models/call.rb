@@ -2,7 +2,7 @@
 require 'json'
 
 class Call
-  FORMAT = %w{target_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
+  FORMAT = %w{call_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
            .map(&:to_sym)
 
   attr_accessor *FORMAT
@@ -18,41 +18,27 @@ class Call
   end
 
 
-  def headers
-    Call::FORMAT.each_with_object({}) { |sym, hash|
-      hash[sym.to_s.camelize] = self.send(sym)
-    }
-  end
-
-
   def save(expires=3.hours)
     dump = Marshal.dump(self)
-    Redis.current.set(Call.call_keyname(target_id), dump, {ex: expires})
-    publish
+    Redis.current.set(Call.call_keyname(call_id), dump, {ex: expires})
+    publish(dump)
   end
 
 
   def destroy
     self.hungup    = true
-    self.hungup_at = Call.current_time
+    self.hungup_at = Time.now.utc
     save(1.minute)
   end
 
 
-  def publish
-    event = {
-      target_call_id: target_id,
-      timestamp:      Call.current_time_ms,
-      name:          'CallState',
-      headers:        headers
-    }
-
-    AmqpManager.publish(event, mailbox_message?(event), true)
+  def publish(dump)
+    AmqpManager.publish(dump, mailbox_message?, true)
   end
 
 
-  def mailbox_message?(event)
-    !event[:headers]['Mailbox'].blank?
+  def mailbox_message?
+    !mailbox.blank?
   end
 
 
@@ -71,7 +57,7 @@ class Call
     num = nil if (num.blank? || num == 'Anonymous')
 
     self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '')
-    self.called_at = Call.current_time
+    self.called_at = Time.now.utc
   end
 
 
@@ -81,7 +67,7 @@ class Call
 
     if chan2
       self.call_tag = "#{chan1}_#{chan2}"
-      self.dispatched_at ||= Call.current_time
+      self.dispatched_at ||= Time.now.utc
     end
   end
 
@@ -185,12 +171,12 @@ class Call
 
 
     def set_dispatched_at(tcid)
-      find(tcid).tap { |c| c.dispatched_at = current_time }.save
+      find(tcid).tap { |c| c.dispatched_at = Time.now.utc }.save
     end
 
 
     def set_queued_at(tcid)
-      find(tcid).tap { |c| c.queued_at = current_time }.save
+      find(tcid).tap { |c| c.queued_at = Time.now.utc }.save
     end
 
 
@@ -216,7 +202,7 @@ class Call
     def update_state_for(event)
       tcid = event.target_call_id
       hdr  = event.headers
-      call = Call.find(tcid) || Call.new(target_id: tcid)
+      call = Call.find(tcid) || Call.new(call_id: tcid)
 
       if call && !call.hungup
         call.update_state_for(hdr)

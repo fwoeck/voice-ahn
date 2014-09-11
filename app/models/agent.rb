@@ -119,13 +119,13 @@ class Agent
 
   def publish(tcid=nil)
     event = {
-      target_call_id: tcid,
-      timestamp:      Call.current_time_ms,
-      name:          'AgentEvent',
-      headers:        headers
+      call_id: tcid,
+      headers: headers
     }
 
-    AmqpManager.publish(event, agent_takes_call?(event), false)
+    AmqpManager.publish(
+      Marshal.dump(event), agent_takes_call?(event), false
+    )
   end
 
 

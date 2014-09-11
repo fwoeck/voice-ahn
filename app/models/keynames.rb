@@ -33,14 +33,4 @@ module Keynames
   def call_keypattern
     "#{AhnConfig.rails_env}.call.*"
   end
-
-
-  def current_time
-    Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S+00:00")
-  end
-
-
-  def current_time_ms
-    Time.now.utc.strftime("%Y-%m-%dT%H:%M:%S.%L+00:00")
-  end
 end
