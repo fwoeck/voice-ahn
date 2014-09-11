@@ -84,7 +84,7 @@ class DefaultContext < Adhearsion::CallController
 
 
   def queue_and_handle_call(lang, skill)
-    self.qs = get_queue_struct_for(lang, skill)
+    @qs = get_queue_struct_for(lang, skill)
 
     while qs && !call_was_answered_or_timed_out? do
       qs.dispatched = false
@@ -103,7 +103,6 @@ class DefaultContext < Adhearsion::CallController
 
 
   def record_voice_memo
-    return unless qs
     qs.status = :timeout
     Call.set_dispatched_at(call_id)
 
@@ -112,6 +111,9 @@ class DefaultContext < Adhearsion::CallController
 
     result = record start_beep: true, max_duration: 60_000
     postprocess_recording result.recording_uri
+  rescue
+    # Usually qs is being deleted over time.
+    # # Usually qs is being deleted over time.
   end
 
 
