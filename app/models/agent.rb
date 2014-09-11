@@ -8,22 +8,23 @@ IdleTimeout   = 3
 class Agent
   include Keynames
 
-  attr_accessor :id, :name, :languages, :skills, :activity, :visibility,
+  attr_accessor :id, :name, :languages, :skills, :activity, :visibility, :call_id,
                 :locked, :availability, :idle_since, :mutex, :unlock_scheduled
 
 
-  def initialize(args)
-    s = self
-    s.id           = args[:id]
-    s.name         = args[:name]
-    s.skills       = args[:skills]
-    s.languages    = args[:languages]
-    s.idle_since   = args[:idle_since]
-    s.availability = args[:availability]
-    s.visibility   = args[:visibility]
-    s.activity     = args[:activity]
-    s.locked       = args[:locked]
-    s.mutex        = Mutex.new
+  def initialize(args=nil)
+    tap { |s|
+      s.id           = args[:id]
+      s.name         = args[:name]
+      s.skills       = args[:skills]
+      s.languages    = args[:languages]
+      s.idle_since   = args[:idle_since]
+      s.availability = args[:availability]
+      s.visibility   = args[:visibility]
+      s.activity     = args[:activity]
+      s.locked       = args[:locked]
+      s.mutex        = Mutex.new
+    } if args
   end
 
 
@@ -109,29 +110,22 @@ class Agent
   end
 
 
-  def headers
-    { activity:   activity,
-      visibility: visibility,
-      extension:  name
-    }
-  end
-
-
   def publish(tcid=nil)
-    event = {
-      call_id: tcid,
-      headers: headers
+    agent = Agent.new.tap { |a|
+      a.name       = name
+      a.call_id    = tcid
+      a.activity   = activity
+      a.visibility = visibility
     }
 
     AmqpManager.publish(
-      Marshal.dump(event), agent_takes_call?(event), false
+      Marshal.dump(agent), agent.takes_call?, false
     )
   end
 
 
-  def agent_takes_call?(event)
-    event[:headers][:activity] == :talking &&
-      event[:headers][:extension] != AhnConfig.admin_name
+  def takes_call?
+    activity == :talking && name != AhnConfig.admin_name
   end
 
 
