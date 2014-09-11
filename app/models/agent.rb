@@ -72,7 +72,7 @@ class Agent
 
 
   def persist_activity_with(act)
-    Redis.current.set(activity_keyname, act, ex: 1.week)
+    Redis.current.set(activity_keyname, act, {ex: 1.week})
     return true
   end
 
