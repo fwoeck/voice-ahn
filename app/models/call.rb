@@ -34,7 +34,7 @@ class Call
 
   def destroy
     self.hungup    = true
-    self.hungup_at = Call.current_time
+    self.hungup_at = Time.now.utc
     save(1.minute)
   end
 
@@ -71,7 +71,7 @@ class Call
     num = nil if (num.blank? || num == 'Anonymous')
 
     self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '')
-    self.called_at = Call.current_time
+    self.called_at = Time.now.utc
   end
 
 
@@ -81,7 +81,7 @@ class Call
 
     if chan2
       self.call_tag = "#{chan1}_#{chan2}"
-      self.dispatched_at ||= Call.current_time
+      self.dispatched_at ||= Time.now.utc
     end
   end
 
@@ -185,12 +185,12 @@ class Call
 
 
     def set_dispatched_at(tcid)
-      find(tcid).tap { |c| c.dispatched_at = current_time }.save
+      find(tcid).tap { |c| c.dispatched_at = Time.now.utc }.save
     end
 
 
     def set_queued_at(tcid)
-      find(tcid).tap { |c| c.queued_at = current_time }.save
+      find(tcid).tap { |c| c.queued_at = Time.now.utc }.save
     end
 
 
