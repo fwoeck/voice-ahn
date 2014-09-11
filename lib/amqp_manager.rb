@@ -26,10 +26,8 @@ module AmqpManager
     }
 
 
-    def publish(payload, include_custom, include_numbers)
+    def publish(data, include_custom, include_numbers)
       Thread.new {
-        data = Marshal.dump(payload)
-
         rails_xchange.publish(data,   routing_key: 'voice.rails')
         custom_xchange.publish(data,  routing_key: 'voice.custom')  if include_custom
         numbers_xchange.publish(data, routing_key: 'voice.numbers') if include_numbers

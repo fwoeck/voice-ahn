@@ -18,17 +18,10 @@ class Call
   end
 
 
-  def headers
-    Call::FORMAT.each_with_object({}) { |sym, hash|
-      hash[sym.to_s.camelize] = self.send(sym)
-    }
-  end
-
-
   def save(expires=3.hours)
     dump = Marshal.dump(self)
     Redis.current.set(Call.call_keyname(target_id), dump, {ex: expires})
-    publish
+    publish(dump)
   end
 
 
@@ -39,20 +32,13 @@ class Call
   end
 
 
-  def publish
-    event = {
-      target_call_id: target_id,
-      timestamp:      Call.current_time_ms,
-      name:          'CallState',
-      headers:        headers
-    }
-
-    AmqpManager.publish(event, mailbox_message?(event), true)
+  def publish(dump)
+    AmqpManager.publish(dump, mailbox_message?, true)
   end
 
 
-  def mailbox_message?(event)
-    !event[:headers]['Mailbox'].blank?
+  def mailbox_message?
+    !mailbox.blank?
   end
 
 
