@@ -2,7 +2,7 @@
 require 'json'
 
 class Call
-  FORMAT = %w{target_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
+  FORMAT = %w{call_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
            .map(&:to_sym)
 
   attr_accessor *FORMAT
@@ -20,7 +20,7 @@ class Call
 
   def save(expires=3.hours)
     dump = Marshal.dump(self)
-    Redis.current.set(Call.call_keyname(target_id), dump, {ex: expires})
+    Redis.current.set(Call.call_keyname(call_id), dump, {ex: expires})
     publish(dump)
   end
 
@@ -202,7 +202,7 @@ class Call
     def update_state_for(event)
       tcid = event.target_call_id
       hdr  = event.headers
-      call = Call.find(tcid) || Call.new(target_id: tcid)
+      call = Call.find(tcid) || Call.new(call_id: tcid)
 
       if call && !call.hungup
         call.update_state_for(hdr)

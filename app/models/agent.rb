@@ -119,8 +119,8 @@ class Agent
 
   def publish(tcid=nil)
     event = {
-      target_call_id: tcid,
-      headers:        headers
+      call_id: tcid,
+      headers: headers
     }
 
     AmqpManager.publish(
