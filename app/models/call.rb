@@ -11,10 +11,10 @@ class Call
   extend Keynames
 
 
-  def initialize(par=nil)
+  def initialize(par={})
     Call::FORMAT.each do |sym|
       self.send "#{sym}=", par.fetch(sym, nil)
-    end if par
+    end
   end
 
 
@@ -26,7 +26,8 @@ class Call
 
 
   def save(expires=3.hours)
-    Redis.current.set(Call.call_keyname(target_id), Marshal.dump(headers), ex: expires)
+    dump = Marshal.dump(self)
+    Redis.current.set(Call.call_keyname(target_id), dump, {ex: expires})
     publish
   end
 
@@ -200,12 +201,8 @@ class Call
 
     def find(tcid)
       return unless tcid
-      fields = Marshal.load(Redis.current.get(Call.call_keyname tcid) || Marshal.dump(new.headers))
-      fields['TargetId'] = tcid
-
-      new Call::FORMAT.each_with_object({}) { |sym, hash|
-        hash[sym] = fields[sym.to_s.camelize]
-      }
+      call = Redis.current.get(call_keyname tcid)
+      Marshal.load(call) if call
     end
 
 
@@ -219,7 +216,7 @@ class Call
     def update_state_for(event)
       tcid = event.target_call_id
       hdr  = event.headers
-      call = Call.find(tcid)
+      call = Call.find(tcid) || Call.new(target_id: tcid)
 
       if call && !call.hungup
         call.update_state_for(hdr)

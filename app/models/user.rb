@@ -37,12 +37,12 @@ class User < Sequel::Model
 
     AgentRegistry[id] = Agent.new(
       id:           id,
-      locked:       false,
       name:         name,
+      locked:       false,
       idle_since:   Time.now.utc,
-      skills:       skills.map(&:name),
       activity:     activity.to_sym,
       visibility:   visibility.to_sym,
+      skills:       skills.map(&:name),
       availability: availability.to_sym,
       languages:    languages.map(&:name)
     )
