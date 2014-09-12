@@ -130,7 +130,7 @@ class Call
 
 
     def update_state_for(event)
-      tcid = event.target_call_id
+      return unless (tcid = event.target_call_id)
       hdr  = event.headers
       call = Call.find(tcid) || Call.new(call_id: tcid)
 
