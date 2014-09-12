@@ -10,5 +10,7 @@ Thread.abort_on_exception = false # Set to true for debugging
 
 Dir['./lib/*.rb'].each { |f| require f }
 
+Celluloid::Actor[:amqp] = AmqpManager.pool
 AmqpManager.start
+
 Adhearsion::CLI::AhnCommand.start

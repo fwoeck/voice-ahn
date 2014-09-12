@@ -86,27 +86,32 @@ class Call
   class << self
 
     def set_language_for(tcid, lang)
-      find(tcid).tap { |c| c.language = lang }.save
+      call = find(tcid)
+      call.tap { |c| c.language = lang }.save if call
     end
 
 
     def set_skill_for(tcid, skill)
-      find(tcid).tap { |c| c.skill = skill }.save
+      call = find(tcid)
+      call.tap { |c| c.skill = skill }.save if call
     end
 
 
     def set_dispatched_at(tcid)
-      find(tcid).tap { |c| c.dispatched_at = Time.now.utc }.save
+      call = find(tcid)
+      call.tap { |c| c.dispatched_at = Time.now.utc }.save if call
     end
 
 
     def set_queued_at(tcid)
-      find(tcid).tap { |c| c.queued_at = Time.now.utc }.save
+      call = find(tcid)
+      call.tap { |c| c.queued_at = Time.now.utc }.save if call
     end
 
 
     def set_mailbox(tcid, mid)
-      find(tcid).tap { |c| c.mailbox = mid }.destroy
+      call = find(tcid)
+      call.tap { |c| c.mailbox = mid }.destroy if call
     end
 
 
