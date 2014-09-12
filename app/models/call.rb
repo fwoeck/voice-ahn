@@ -56,7 +56,7 @@ class Call
     num = hdr['CallerIDNum']
     num = nil if (num.blank? || num == 'Anonymous')
 
-    self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '')
+    self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '').sub(/@.+$/, '')
     self.called_at = Time.now.utc
   end
 
