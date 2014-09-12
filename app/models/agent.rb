@@ -28,7 +28,7 @@ class Agent
   end
 
 
-  def update_settings_to(key, value)
+  def update_setting(key, value)
     self.send "#{key}=", value
 
     if key == :visibility
@@ -119,7 +119,7 @@ class Agent
     agent = AgentRegistry[id]
 
     if agent && key
-      agent.update_settings_to(key, value)
+      agent.update_setting(key, value)
     else
       synch_agent_from_db(agent, id)
     end
@@ -152,7 +152,8 @@ class Agent
 
   def reload_asterisk_sip_peer(ext)
     return unless ext
-    system("sudo asterisk -rx 'sip prune realtime #{ext}'")
+    system("sudo asterisk -rx 'sip prune realtime #{ext}' >/dev/null")
+    Adhearsion.logger.info "Update asterisk peer extension #{ext}"
   end
 
 
