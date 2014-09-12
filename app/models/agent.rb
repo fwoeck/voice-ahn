@@ -28,29 +28,14 @@ class Agent
   end
 
 
-  # FIXME This fails if an array field-name ends with a "y":
-  #
-  def key_contains_array?(key)
-    !key[/y$/]
-  end
-
-
-  def interpolate_setter_from(key)
-    "#{key}#{key_contains_array?(key) ? 's' : ''}="
-  end
-
-
-  def update_settings_to(key, value)
-    setter = interpolate_setter_from(key)
-    self.send setter, (
-      key_contains_array?(key) ? value.split(',') : value.to_sym
-    )
+  def update_setting(key, value)
+    self.send "#{key}=", value
 
     if key == :visibility
       persist_visibility_with(value)
       publish
     end
-    Adhearsion.logger.info "Update #{id}'s setting: #{setter}'#{value}'"
+    Adhearsion.logger.info "Set ##{id}'s #{key} to \"#{value}\""
   end
 
 
@@ -126,6 +111,49 @@ class Agent
 
   def takes_call?
     activity == :talking && name != AhnConfig.admin_name
+  end
+
+
+  def handle_update
+    key, value = get_agent_value_pair
+    agent = AgentRegistry[id]
+
+    if agent && key
+      agent.update_setting(key, value)
+    else
+      synch_agent_from_db(agent, id)
+    end
+  end
+
+
+  def get_agent_value_pair
+    ivar = instance_variables.reject { |v| v == :@id }.first
+    key  = ivar ? ivar.to_s.sub('@', '').to_sym : nil
+    val  = key  ? self.send(key) : nil
+
+    [key, val]
+  end
+
+
+  def synch_agent_from_db(agent, uid)
+    ext = nil
+
+    if (db_user = User[uid])
+      ext = db_user.name
+      db_user.build_agent
+    elsif agent
+      ext = agent.name
+      AgentRegistry.delete uid
+    end
+
+    reload_asterisk_sip_peer(ext)
+  end
+
+
+  def reload_asterisk_sip_peer(ext)
+    return unless ext
+    system("sudo asterisk -rx 'sip prune realtime #{ext}' >/dev/null")
+    Adhearsion.logger.info "Update asterisk peer extension #{ext}"
   end
 
 
@@ -219,47 +247,6 @@ class Agent
       value.is_a?(Array) ?
         value.include?(request) :
         value.to_s == request
-    end
-
-
-    def update_client_settings_with(data)
-      uid, key, value = get_agent_value_pair(data)
-      agent = AgentRegistry[uid]
-
-      if agent && key
-        agent.update_settings_to(key, value)
-      else
-        synch_agent_from_db(agent, uid)
-      end
-    end
-
-
-    def synch_agent_from_db(agent, uid)
-      name = nil
-
-      if (db_user = User[uid])
-        name = db_user.name
-        db_user.build_agent
-      elsif agent
-        name = agent.name
-        AgentRegistry.delete uid
-      end
-
-      reload_asterisk_sip_peer(name)
-    end
-
-
-    def reload_asterisk_sip_peer(name)
-      return unless name
-      system("sudo asterisk -rx 'sip prune realtime #{name}'")
-    end
-
-
-    def get_agent_value_pair(data)
-      uid = data.delete(:user_id).to_i
-      key = data.keys.first
-
-      [uid, key, data[key]]
     end
 
 

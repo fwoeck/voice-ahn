@@ -40,7 +40,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/punchblock.git
-  revision: f94d0ebcfefe1b5dbcfcdc0f3c333fff1fa03456
+  revision: 279473c9fc567907928bceceedb80ca829015cb3
   branch: develop
   specs:
     punchblock (2.5.2)
@@ -68,7 +68,7 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
-    activesupport (4.1.5)
+    activesupport (4.1.6)
       i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -155,7 +155,7 @@ GEM
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
       rspec-mocks (~> 3.1.0)
-    rspec-core (3.1.1)
+    rspec-core (3.1.2)
       rspec-support (~> 3.1.0)
     rspec-expectations (3.1.0)
       diff-lcs (>= 1.2.0, < 2.0)

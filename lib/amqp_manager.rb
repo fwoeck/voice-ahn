@@ -66,12 +66,7 @@ module AmqpManager
 
       ahn_queue.subscribe { |delivery_info, metadata, payload|
         data = Marshal.load(payload)
-
-        if data[:user_id]
-          Agent.update_client_settings_with(data)
-        elsif data[:command]
-          Call.execute_command_with(data)
-        end
+        data.handle_update
       }
     end
   end
