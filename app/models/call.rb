@@ -85,8 +85,6 @@ class Call
 
   class << self
 
-    # TODO These should be calling instance methods:
-    #
     def set_language_for(tcid, lang)
       find(tcid).tap { |c| c.language = lang }.save
     end
