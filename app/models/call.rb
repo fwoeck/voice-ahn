@@ -21,7 +21,7 @@ class Call
   def save(expires=3.hours)
     dump = Marshal.dump(self)
     Redis.current.set(Call.call_keyname(call_id), dump, {ex: expires})
-    publish(dump)
+    publish_update(dump)
   end
 
 
@@ -32,7 +32,7 @@ class Call
   end
 
 
-  def publish(dump)
+  def publish_update(dump)
     AmqpManager.publish(dump, mailbox_message?, true)
   end
 
