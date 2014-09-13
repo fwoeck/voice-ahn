@@ -97,6 +97,7 @@ class Agent
 
   def publish_update(tcid=nil)
     agent = Agent.new.tap { |a|
+      a.id         = id
       a.name       = name
       a.call_id    = tcid
       a.activity   = activity
@@ -104,7 +105,7 @@ class Agent
     }
 
     AmqpManager.publish(
-      Marshal.dump(agent), agent.takes_call?, false
+      Marshal.dump(agent), agent.takes_call?, !agent.call_id.blank?
     )
   end
 
