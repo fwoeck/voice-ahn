@@ -10,5 +10,10 @@ Thread.abort_on_exception = false # Set to true for debugging
 
 Dir['./lib/*.rb'].each { |f| require f }
 
+# TODO This will suppress warnings at exit, but could also
+#       mask potential problems. Try to remove after a while:
+#
+Celluloid.logger = nil
+
 AmqpManager.start
 Adhearsion::CLI::AhnCommand.start
