@@ -21,7 +21,7 @@ class Call
   def save(expires=3.hours)
     dump = Marshal.dump(self)
     Redis.current.set(Call.call_keyname(call_id), dump, {ex: expires})
-    publish(dump)
+    publish_update(dump)
   end
 
 
@@ -32,7 +32,7 @@ class Call
   end
 
 
-  def publish(dump)
+  def publish_update(dump)
     AmqpManager.publish(dump, mailbox_message?, true)
   end
 
@@ -56,7 +56,7 @@ class Call
     num = hdr['CallerIDNum']
     num = nil if (num.blank? || num == 'Anonymous')
 
-    self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '')
+    self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '').sub(/@.+$/, '')
     self.called_at = Time.now.utc
   end
 
@@ -86,27 +86,32 @@ class Call
   class << self
 
     def set_language_for(tcid, lang)
-      find(tcid).tap { |c| c.language = lang }.save
+      call = find(tcid)
+      call.tap { |c| c.language = lang }.save if call
     end
 
 
     def set_skill_for(tcid, skill)
-      find(tcid).tap { |c| c.skill = skill }.save
+      call = find(tcid)
+      call.tap { |c| c.skill = skill }.save if call
     end
 
 
     def set_dispatched_at(tcid)
-      find(tcid).tap { |c| c.dispatched_at = Time.now.utc }.save
+      call = find(tcid)
+      call.tap { |c| c.dispatched_at = Time.now.utc }.save if call
     end
 
 
     def set_queued_at(tcid)
-      find(tcid).tap { |c| c.queued_at = Time.now.utc }.save
+      call = find(tcid)
+      call.tap { |c| c.queued_at = Time.now.utc }.save if call
     end
 
 
     def set_mailbox(tcid, mid)
-      find(tcid).tap { |c| c.mailbox = mid }.destroy
+      call = find(tcid)
+      call.tap { |c| c.mailbox = mid }.destroy if call
     end
 
 
@@ -125,7 +130,7 @@ class Call
 
 
     def update_state_for(event)
-      tcid = event.target_call_id
+      return unless (tcid = event.target_call_id)
       hdr  = event.headers
       call = Call.find(tcid) || Call.new(call_id: tcid)
 

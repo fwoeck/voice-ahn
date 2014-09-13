@@ -33,7 +33,7 @@ class Agent
 
     if key == :visibility
       persist_visibility_with(value)
-      publish
+      publish_update
     end
     Adhearsion.logger.info "Set ##{id}'s #{key} to \"#{value}\""
   end
@@ -95,7 +95,7 @@ class Agent
   end
 
 
-  def publish(tcid=nil)
+  def publish_update(tcid=nil)
     agent = Agent.new.tap { |a|
       a.name       = name
       a.call_id    = tcid
@@ -110,7 +110,7 @@ class Agent
 
 
   def takes_call?
-    activity == :talking && name != AhnConfig.admin_name
+    [:ringing, :talking].include?(activity) && name != AhnConfig.admin_name
   end
 
 
@@ -176,7 +176,7 @@ class Agent
 
     def update_activity_for(agent, act, tcid)
       return unless agent
-      agent.update_activity_to(act) && agent.publish(tcid)
+      agent.update_activity_to(act) && agent.publish_update(tcid)
     end
 
 

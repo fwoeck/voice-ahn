@@ -2,10 +2,12 @@ Adhearsion.config do |config|
 
   config.production do |env|
     env.platform.logging.level = :warn
+    env.platform.after_hangup_lifetime = 30
   end
 
   config.development do |env|
     env.platform.logging.level = :info
+    env.platform.after_hangup_lifetime = 30
   end
 
 

@@ -58,7 +58,7 @@ class User < Sequel::Model
   end
 
 
-  def self.shutdown!
+  def self.shutdown
     @@shutdown = true
   end
 
