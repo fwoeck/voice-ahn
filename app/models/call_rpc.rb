@@ -15,7 +15,7 @@ class CallRpc
 
   def originate
     _from = "SIP/#{from}"
-    _to   = call_to_trunk? ? "#{to} <#{to}@sipconnect.sipgate.de>" : "SIP/#{to}"
+    _to   = call_to_trunk? ? "SIP/#{to}@sipconnect.sipgate.de" : "SIP/#{to}"
 
     # FIXME Transfer of a call originated by us will fail, because
     #       a controller is needed to store the metadata:
