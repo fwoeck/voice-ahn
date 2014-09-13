@@ -7,13 +7,6 @@ class AmqpManager
   TOPICS = [:rails, :numbers, :custom, :ahn]
 
 
-  def publish(data, include_custom, include_numbers)
-    rails_xchange.publish(data, routing_key: 'voice.rails')
-    custom_xchange.publish(data, routing_key: 'voice.custom') if include_custom
-    numbers_xchange.publish(data, routing_key: 'voice.numbers') if include_numbers
-  end
-
-
   TOPICS.each { |name|
     sym = "@#{name}_channel".to_sym
     define_method "#{name}_channel" do
@@ -38,13 +31,20 @@ class AmqpManager
   }
 
 
+  def publish(data, include_custom, include_numbers)
+    rails_xchange.publish(data, routing_key: 'voice.rails')
+    custom_xchange.publish(data, routing_key: 'voice.custom') if include_custom
+    numbers_xchange.publish(data, routing_key: 'voice.numbers') if include_numbers
+  end
+
+
   def connection
     establish_connection unless @@connection
     @@connection
   end
 
 
-  def shutdown!
+  def shutdown
     connection.close
   end
 
@@ -75,12 +75,13 @@ class AmqpManager
   class << self
 
     def start
+      Celluloid::Actor[:amqp] = AmqpManager.pool
       @@manager ||= new.tap { |m| m.start }
     end
 
 
-    def shutdown!
-      @@manager.shutdown!
+    def shutdown
+      @@manager.shutdown
     end
 
 

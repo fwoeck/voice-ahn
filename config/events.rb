@@ -1,9 +1,9 @@
 Adhearsion::Events.draw do
 
   shutdown do |event|
-    User.shutdown!
+    User.shutdown
     Adhearsion.active_calls.values.each { |call| call.hangup }
-    AmqpManager.shutdown!
+    AmqpManager.shutdown
   end
 
 
