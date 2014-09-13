@@ -97,6 +97,7 @@ class Agent
 
   def publish_update(tcid=nil)
     agent = Agent.new.tap { |a|
+      a.id         = id
       a.name       = name
       a.call_id    = tcid
       a.activity   = activity
