@@ -105,7 +105,7 @@ class Agent
     }
 
     AmqpManager.publish(
-      Marshal.dump(agent), agent.takes_call?, false
+      Marshal.dump(agent), agent.takes_call?, !agent.call_id.blank?
     )
   end
 
