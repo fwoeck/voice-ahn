@@ -4,9 +4,6 @@ Dir['./app/models/*.rb'].each { |f| require f }
 class User < Sequel::Model
   include Keynames
 
-  one_to_many :skills
-  one_to_many :languages
-
   @@ready    = false
   @@shutdown = false
 
@@ -32,6 +29,16 @@ class User < Sequel::Model
   end
 
 
+  def skills
+    @memo_skills ||= Redis.current.smembers(skills_keyname).sort
+  end
+
+
+  def languages
+    @memo_languages ||= Redis.current.smembers(languages_keyname).sort
+  end
+
+
   def build_agent
     Redis.current.set(activity_keyname, activity_default)
 
@@ -39,12 +46,12 @@ class User < Sequel::Model
       id:           id,
       name:         name,
       locked:       false,
+      skills:       skills,
+      languages:    languages,
       idle_since:   Time.now.utc,
       activity:     activity.to_sym,
       visibility:   visibility.to_sym,
-      skills:       skills.map(&:name),
-      availability: availability.to_sym,
-      languages:    languages.map(&:name)
+      availability: availability.to_sym
     )
   end
 
