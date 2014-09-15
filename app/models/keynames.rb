@@ -15,6 +15,16 @@ module Keynames
   end
 
 
+  def languages_keyname
+    "#{AhnConfig.rails_env}.languages.#{self.id}"
+  end
+
+
+  def skills_keyname
+    "#{AhnConfig.rails_env}.skills.#{self.id}"
+  end
+
+
   def activity_default
     :silent
   end
