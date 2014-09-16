@@ -99,14 +99,21 @@ class Agent
     agent = Agent.new.tap { |a|
       a.id         = id
       a.name       = name
+      a.skills     = skills
       a.call_id    = tcid
       a.activity   = activity
+      a.languages  = languages
       a.visibility = visibility
     }
 
     AmqpManager.publish(
-      Marshal.dump(agent), agent.takes_call?, !agent.call_id.blank?
+      Marshal.dump(agent), agent.takes_call?, agent.log_event?
     )
+  end
+
+
+  def log_event?
+    activity == :talking
   end
 
 

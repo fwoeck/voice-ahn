@@ -95,42 +95,42 @@ class DefaultContext < Adhearsion::CallController
 
 
   def dial_to_next_agent
-    wait_for_next_agent_on
-    qs.status = dial_to qs.agent.name, for: DialTimeout.seconds
+    wait_for_next_agent
+    qs.status = dial_to(qs, for: DialTimeout.seconds)
   rescue TimeoutError, NoMethodError
     record_voice_memo
   end
 
 
-  def record_voice_memo
-    qs.status = :timeout
-    Call.set_dispatched_at(call_id)
+  def wait_for_next_agent
+    raise TimeoutError if qs.tries > 2
+    qs.tries += 1
+    timeout   = 2 * DialTimeout
 
-    stop_moh
-    play "wimdu/#{qs.lang}_leave_a_message"
-
-    result = record start_beep: true, max_duration: 60_000
-    postprocess_recording result.recording_uri
-  rescue
-    # Usually qs is being deleted over time.
-    # # Usually qs is being deleted over time.
-  end
-
-
-  def postprocess_recording(uri)
-    rid = uri[/[0-9a-f-]{10,}/]
-
-    Call.set_mailbox(call_id, rid)
-    Thread.new {
-      system "sox --norm=-1 #{AhnConfig.mp3_source}/#{rid}.wav -C 128.2 #{AhnConfig.mp3_target}/#{rid}.mp3"
+    Timeout::timeout(timeout) {
+      stop_moh
+      qs.moh = play! 'wimdu/songbirds'
+      qs.agent = qs.queue.pop
     }
   end
 
 
-  def dial_to(to, options)
+  def dial_to(qs, options)
+    to = qs.agent.name
     cd = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", options, call)
     metadata['current_dial'] = cd
-    execute_dial(cd)
+    execute_dial(cd, qs)
+  end
+
+
+  def execute_dial(cd, qs)
+    stop_moh
+    cd.run(self)
+    update_agents_leg(cd, qs)
+    cd.await_completion
+    cd.cleanup_calls
+
+    return cd.status
   end
 
 
@@ -145,31 +145,38 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
-  def execute_dial(cd)
-    cd.run self
-    stop_moh
-    cd.await_completion
-    cd.cleanup_calls
+  def update_agents_leg(cd, qs)
+    tcid = cd.status.calls.first.id
+    Call.set_lang_and_skill_for(tcid, qs.lang, qs.skill)
+  end
 
-    return cd.status
+
+  def record_voice_memo
+    qs.status = :timeout
+    Call.set_dispatched_at(call_id)
+
+    stop_moh
+    play "wimdu/#{qs.lang}_leave_a_message"
+
+    result = record start_beep: true, max_duration: 60_000
+    postprocess_recording result.recording_uri
+  rescue
+    # Usually qs is being deleted over time.
+  end
+
+
+  def postprocess_recording(uri)
+    rid = uri[/[0-9a-f-]{10,}/]
+
+    Call.set_mailbox(call_id, rid)
+    Thread.new {
+      system "sox --norm=-1 #{AhnConfig.mp3_source}/#{rid}.wav -C 128.2 #{AhnConfig.mp3_target}/#{rid}.mp3"
+    }
   end
 
 
   def call_was_answered_or_timed_out?
     return false unless qs.status
     qs.status == :timeout || qs.status.result == :answer
-  end
-
-
-  def wait_for_next_agent_on
-    raise TimeoutError if qs.tries > 2
-    qs.tries += 1
-    timeout   = 2 * DialTimeout
-
-    Timeout::timeout(timeout) {
-      stop_moh
-      qs.moh = play! 'wimdu/songbirds'
-      qs.agent = qs.queue.pop
-    }
   end
 end

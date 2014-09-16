@@ -19,6 +19,13 @@ module CallScheduler
     end
 
 
+    def cleanup_call_mutexes
+      (CallRegistry.keys - Adhearsion.active_calls.keys).each { |key|
+        CallRegistry.delete(key)
+      }
+    end
+
+
     def schedule_calls_to_agents
       waiting_calls.each { |call|
         agent_id = Agent.where(languages: call.lang, skills: call.skill).sort_by_idle_time.first
@@ -47,6 +54,7 @@ module CallScheduler
       Thread.new {
         while !User.shutdown? do
           sleep 1
+          cleanup_call_mutexes
           schedule_calls_to_agents
         end
       }

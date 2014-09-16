@@ -1,6 +1,9 @@
 # encoding: utf-8
 require 'json'
 
+CallRegistry = ThreadSafe::Cache.new
+
+
 class Call
   FORMAT = %w{call_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
            .map(&:to_sym)
@@ -18,10 +21,10 @@ class Call
   end
 
 
-  def save(expires=3.hours)
+  def save(expires=3.hours, publish=true)
     dump = Marshal.dump(self)
     Redis.current.set(Call.call_keyname(call_id), dump, {ex: expires})
-    publish_update(dump)
+    publish_update(dump) if publish
   end
 
 
@@ -85,33 +88,70 @@ class Call
 
   class << self
 
+    def threaded_call_update(tcid, &block)
+      return unless tcid
+      Thread.new { lock_for_call(tcid, block) }
+    end
+
+
+    def lock_for_call(tcid, block)
+      (CallRegistry[tcid] ||= Mutex.new).tap { |mutex|
+        mutex.synchronize { block.call }
+      }
+    end
+
+
+    def set_lang_and_skill_for(tcid, lang, skill)
+      sleep 0.1 # FIXME Why is this exactly necessary?
+
+      threaded_call_update(tcid) do
+        call = find(tcid)
+
+        call.tap { |c|
+          c.language = lang
+          c.skill    = skill
+        }.save(3.hours, false) if call
+      end
+    end
+
+
     def set_language_for(tcid, lang)
-      call = find(tcid)
-      call.tap { |c| c.language = lang }.save if call
+      threaded_call_update(tcid) do
+        call = find(tcid)
+        call.tap { |c| c.language = lang }.save if call
+      end
     end
 
 
     def set_skill_for(tcid, skill)
-      call = find(tcid)
-      call.tap { |c| c.skill = skill }.save if call
+      threaded_call_update(tcid) do
+        call = find(tcid)
+        call.tap { |c| c.skill = skill }.save if call
+      end
     end
 
 
     def set_dispatched_at(tcid)
-      call = find(tcid)
-      call.tap { |c| c.dispatched_at = Time.now.utc }.save if call
+      threaded_call_update(tcid) do
+        call = find(tcid)
+        call.tap { |c| c.dispatched_at = Time.now.utc }.save if call
+      end
     end
 
 
     def set_queued_at(tcid)
-      call = find(tcid)
-      call.tap { |c| c.queued_at = Time.now.utc }.save if call
+      threaded_call_update(tcid) do
+        call = find(tcid)
+        call.tap { |c| c.queued_at = Time.now.utc }.save if call
+      end
     end
 
 
     def set_mailbox(tcid, mid)
-      call = find(tcid)
-      call.tap { |c| c.mailbox = mid }.destroy if call
+      threaded_call_update(tcid) do
+        call = find(tcid)
+        call.tap { |c| c.mailbox = mid }.destroy if call
+      end
     end
 
 
@@ -124,18 +164,23 @@ class Call
 
     def close_state_for(event)
       tcid = event.target_call_id
-      call = Call.find(tcid)
-      call.destroy if call
+
+      threaded_call_update(tcid) do
+        call = Call.find(tcid)
+        call.destroy if call
+      end
     end
 
 
     def update_state_for(event)
       return unless (tcid = event.target_call_id)
-      hdr  = event.headers
-      call = Call.find(tcid) || Call.new(call_id: tcid)
+      hdr = event.headers
 
-      if call && !call.hungup
-        call.update_state_for(hdr)
+      threaded_call_update(tcid) do
+        call = Call.find(tcid) || Call.new(call_id: tcid)
+        if call && !call.hungup
+          call.update_state_for(hdr)
+        end
       end
     end
 
