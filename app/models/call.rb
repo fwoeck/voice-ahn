@@ -5,17 +5,17 @@ CallRegistry = ThreadSafe::Cache.new
 
 
 class Call
+  extend Keynames
+
+  Queues = ThreadSafe::Hash.new
   FORMAT = %w{call_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
            .map(&:to_sym)
 
   attr_accessor *FORMAT
 
-  Queues = ThreadSafe::Hash.new
-  extend Keynames
-
 
   def initialize(par={})
-    Call::FORMAT.each do |sym|
+    FORMAT.each do |sym|
       self.send "#{sym}=", par.fetch(sym, nil)
     end
   end
