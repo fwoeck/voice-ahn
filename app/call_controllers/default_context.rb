@@ -96,7 +96,7 @@ class DefaultContext < Adhearsion::CallController
 
   def dial_to_next_agent
     wait_for_next_agent
-    qs.status = dial_to(qs.agent.name, for: DialTimeout.seconds)
+    qs.status = dial_to(qs, for: DialTimeout.seconds)
   rescue TimeoutError, NoMethodError
     record_voice_memo
   end
@@ -115,16 +115,18 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
-  def dial_to(to, options)
+  def dial_to(qs, options)
+    to = qs.agent.name
     cd = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", options, call)
     metadata['current_dial'] = cd
-    execute_dial(cd)
+    execute_dial(cd, qs)
   end
 
 
-  def execute_dial(cd)
-    cd.run self
+  def execute_dial(cd, qs)
     stop_moh
+    cd.run(self)
+    update_agents_leg(cd, qs)
     cd.await_completion
     cd.cleanup_calls
 
@@ -140,6 +142,12 @@ class DefaultContext < Adhearsion::CallController
       end
       qs.moh = nil
     end
+  end
+
+
+  def update_agents_leg(cd, qs)
+    tcid = cd.status.calls.first.id
+    Call.set_lang_and_skill_for(tcid, qs.lang, qs.skill)
   end
 
 
