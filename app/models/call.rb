@@ -21,10 +21,10 @@ class Call
   end
 
 
-  def save(expires=3.hours)
+  def save(expires=3.hours, publish=true)
     dump = Marshal.dump(self)
     Redis.current.set(Call.call_keyname(call_id), dump, {ex: expires})
-    publish_update(dump)
+    publish_update(dump) if publish
   end
 
 
@@ -110,7 +110,7 @@ class Call
         call.tap { |c|
           c.language = lang
           c.skill    = skill
-        }.save if call
+        }.save(3.hours, false) if call
       end
     end
 
