@@ -95,14 +95,14 @@ class DefaultContext < Adhearsion::CallController
 
 
   def dial_to_next_agent
-    wait_for_next_agent_on
+    wait_for_next_agent
     qs.status = dial_to(qs.agent.name, for: DialTimeout.seconds)
   rescue TimeoutError, NoMethodError
     record_voice_memo
   end
 
 
-  def wait_for_next_agent_on
+  def wait_for_next_agent
     raise TimeoutError if qs.tries > 2
     qs.tries += 1
     timeout   = 2 * DialTimeout
