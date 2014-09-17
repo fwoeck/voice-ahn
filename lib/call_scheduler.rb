@@ -21,6 +21,7 @@ module CallScheduler
 
     def cleanup_call_mutexes
       (CallRegistry.keys - Adhearsion.active_calls.keys).each { |key|
+        CallRegistry[key].terminate
         CallRegistry.delete(key)
       }
     end
