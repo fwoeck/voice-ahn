@@ -5,7 +5,7 @@ class CallActor
 
 
   def initialize(tcid)
-    @call = ::Call.find(tcid) || ::Call.new(call_id: tcid)
+    @call = ::Call.new(call_id: tcid)
   end
 
 

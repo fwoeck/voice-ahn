@@ -85,13 +85,6 @@ class Call
 
   class << self
 
-    def find(tcid)
-      return unless tcid
-      call = Redis.current.get(call_keyname tcid)
-      Marshal.load(call) if call
-    end
-
-
     def set_lang_and_skill_for(tcid, lang, skill)
       (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_lang_and_skill(lang, skill)
     end
