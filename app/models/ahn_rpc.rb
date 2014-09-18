@@ -3,7 +3,7 @@ class AhnRpc
   attr_accessor :call_id, :command, :to, :from
 
 
-  def handle_update
+  def handle_message
     self.send command
   end
 
