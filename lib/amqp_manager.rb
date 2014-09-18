@@ -60,8 +60,7 @@ class AmqpManager
     ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
 
     ahn_queue.subscribe { |delivery_info, metadata, payload|
-      data = Marshal.load(payload)
-      data.handle_update
+      Marshal.load(payload).handle_message
     }
   end
 

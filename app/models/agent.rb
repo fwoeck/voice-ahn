@@ -122,7 +122,7 @@ class Agent
   end
 
 
-  def handle_update
+  def handle_message
     key, value = get_agent_value_pair
     agent = AgentRegistry[id]
 
