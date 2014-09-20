@@ -4,7 +4,7 @@ require 'timeout'
 
 QueueStruct = Struct.new(
   :queue, :lang, :skill, :queued_at, :dispatched,
-  :tries, :status, :agent, :moh
+  :tries, :status, :agent, :moh, :call_id
 )
 
 
@@ -36,14 +36,6 @@ class DefaultContext < Adhearsion::CallController
 
   def call_id
     @call_id ||= call.id
-  end
-
-
-  def get_queue_struct_for(lang, skill)
-    Call::Queues[call_id] ||= QueueStruct.new(
-      Queue.new, lang, skill, Time.now.utc,
-      false, 0, nil, nil, nil
-    )
   end
 
 
@@ -80,6 +72,14 @@ class DefaultContext < Adhearsion::CallController
   def user_entered_skill?(tries, input)
     keys = AhnConfig.skill_menu.keys.map(&:to_s)
     input && keys.include?(input.utterance)
+  end
+
+
+  def get_queue_struct_for(lang, skill)
+    Call::Queues[call_id] ||= QueueStruct.new(
+      Queue.new, lang, skill, Time.now.utc,
+      false, 0, nil, nil, nil, call_id
+    )
   end
 
 
@@ -126,7 +126,7 @@ class DefaultContext < Adhearsion::CallController
   def execute_dial(cd, qs)
     stop_moh
     cd.run(self)
-    update_agents_leg(cd, qs)
+    update_agent_leg(cd, qs)
     cd.await_completion
     cd.cleanup_calls
 
@@ -145,9 +145,9 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
-  def update_agents_leg(cd, qs)
+  def update_agent_leg(cd, qs)
     tcid = cd.status.calls.first.id
-    Call.set_lang_and_skill_for(tcid, qs.lang, qs.skill)
+    Call.set_params_for(tcid, qs)
   end
 
 
