@@ -62,11 +62,11 @@ class Call
 
 
   def detect_call_tag_for(hdr)
-    chan1 = hdr['Channel1'] || hdr['Channel']
+    chan1 = hdr['Channel1']
     chan2 = hdr['Channel2']
 
     if chan2
-      self.call_tag = "#{chan1}_#{chan2}"
+      self.call_tag = "#{chan1} #{chan2}"
       self.dispatched_at ||= Time.now.utc
     end
   end
