@@ -5,7 +5,7 @@ class Call
   extend Keynames
 
   Queues = ThreadSafe::Hash.new
-  FORMAT = %w{call_id call_tag language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
+  FORMAT = %w{call_id call_tag origin_id language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
            .map(&:to_sym)
 
   attr_accessor *FORMAT
@@ -62,11 +62,11 @@ class Call
 
 
   def detect_call_tag_for(hdr)
-    chan1 = hdr['Channel1'] || hdr['Channel']
+    chan1 = hdr['Channel1']
     chan2 = hdr['Channel2']
 
     if chan2
-      self.call_tag = "#{chan1}_#{chan2}"
+      self.call_tag = "#{chan1} #{chan2}"
       self.dispatched_at ||= Time.now.utc
     end
   end
@@ -85,8 +85,8 @@ class Call
 
   class << self
 
-    def set_lang_and_skill_for(tcid, lang, skill)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_lang_and_skill(lang, skill)
+    def set_params_for(tcid, qs)
+      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_params(qs)
     end
 
 

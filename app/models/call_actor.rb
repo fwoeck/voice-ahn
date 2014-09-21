@@ -9,10 +9,11 @@ class CallActor
   end
 
 
-  def set_lang_and_skill(lang, skill)
+  def set_params(qs)
     call.tap { |c|
-      c.language = lang
-      c.skill    = skill
+      c.language  = qs.lang
+      c.origin_id = qs.call_id
+      c.skill     = qs.skill
     }.save(3.hours, false) if call
   end
 
