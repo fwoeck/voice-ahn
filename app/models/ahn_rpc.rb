@@ -45,6 +45,9 @@ class AhnRpc
         metadata['current_dial'] = tdial
 
         tdial.run self
+        # TODO We need to add the origin_id. etc to to new call:
+        #
+        # update_agent_leg(tdial, qs)
         tdial.await_completion
         tdial.cleanup_calls
       ensure
