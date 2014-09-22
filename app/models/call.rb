@@ -85,45 +85,50 @@ class Call
 
   class << self
 
+    def find(tcid)
+      CallRegistry[tcid] ||= CallActor.new(tcid)
+    end
+
+
     def set_params_for(tcid, qs)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_params(qs)
+      find(tcid).async.set_params(qs)
     end
 
 
     def set_language_for(tcid, lang)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_language(lang)
+      find(tcid).async.set_language(lang)
     end
 
 
     def set_skill_for(tcid, skill)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_skill(skill)
+      find(tcid).async.set_skill(skill)
     end
 
 
     def set_dispatched_at(tcid)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_dispatched_at
+      find(tcid).async.set_dispatched_at
     end
 
 
     def set_queued_at(tcid)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_queued_at
+      find(tcid).async.set_queued_at
     end
 
 
     def set_mailbox(tcid, mid)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.set_mailbox(mid)
+      find(tcid).async.set_mailbox(mid)
     end
 
 
     def close_state_for(event)
       return unless (tcid = event.target_call_id)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.close_state
+      find(tcid).async.close_state
     end
 
 
     def update_state_for(event)
       return unless (tcid = event.target_call_id)
-      (CallRegistry[tcid] ||= CallActor.new(tcid)).async.update_state(event.headers)
+      find(tcid).async.update_state(event.headers)
     end
 
 

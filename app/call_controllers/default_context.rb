@@ -3,7 +3,7 @@ require 'timeout'
 
 
 QueueStruct = Struct.new(
-  :queue, :lang, :skill, :queued_at, :dispatched,
+  :queue, :language, :skill, :queued_at, :dispatched,
   :tries, :status, :agent, :moh, :call_id
 )
 
@@ -156,7 +156,7 @@ class DefaultContext < Adhearsion::CallController
     Call.set_dispatched_at(call_id)
 
     stop_moh
-    play "wimdu/#{qs.lang}_leave_a_message"
+    play "wimdu/#{qs.language}_leave_a_message"
 
     result = record start_beep: true, max_duration: 60_000
     postprocess_recording result.recording_uri
