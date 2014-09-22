@@ -23,7 +23,10 @@ class AhnRpc
     Adhearsion::OutboundCall.originate(_from, from: _to) do
       opts = {for: DialTimeout.seconds}
       opts[:from] = _from unless call_to_trunk?
-      dial _to, opts
+
+      cd = Adhearsion::CallController::Dial::Dial.new(_to, opts, call)
+      metadata['current_dial'] = cd
+      execute_dial(cd, Call.find(call.id).call)
     end
   end
 
@@ -56,13 +59,13 @@ class AhnRpc
 
   def execute_dial(dial, call)
     dial.run(self)
-    update_agent_leg(dial, call)
+    update_second_leg(dial, call)
     dial.await_completion
     dial.cleanup_calls
   end
 
 
-  def update_agent_leg(dial, call)
+  def update_second_leg(dial, call)
     tcid = dial.status.calls.first.id
     Call.set_params_for(tcid, call)
   end
