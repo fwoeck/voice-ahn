@@ -17,43 +17,57 @@ class AhnRpc
     _from = "SIP/#{from}"
     _to   = call_to_trunk? ? "SIP/#{to}@sipconnect.sipgate.de" : "SIP/#{to}"
 
-    # FIXME Transfer of a call originated by us will fail, because
+    # FIXME Transfer of a call originated by us will fail. Maybe, because
     #       a controller is needed to store the metadata:
     #
     Adhearsion::OutboundCall.originate(_from, from: _to) do
       opts = {for: DialTimeout.seconds}
       opts[:from] = _from unless call_to_trunk?
-      dial _to, opts
+
+      cd = Adhearsion::CallController::Dial::Dial.new(_to, opts, call)
+      metadata['current_dial'] = cd
+      execute_dial(cd, Call.find(call.id).call)
     end
   end
 
 
   def transfer
-    call = find_ahn_call
-    call.auto_hangup = false
+    if (ahn_call = find_ahn_call)
+      ahn_call.auto_hangup = false
 
-    cdial = call.controllers.first.metadata['current_dial']
-    execute_transfer(call, cdial)
+      cdial = ahn_call.controllers.first.metadata['current_dial']
+      execute_transfer(ahn_call, cdial, Call.find(ahn_call.id).call)
+    end
   end
 
 
-  def execute_transfer(call, cdial)
-    call.execute_controller do
+  def execute_transfer(ahn_call, cdial, call)
+    ahn_call.execute_controller do
       begin
         cdial.cleanup_calls
-        tdial = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", {}, call)
-        metadata['current_dial'] = tdial
-
-        tdial.run self
-        # TODO We need to add the origin_id. etc to to new call:
+        tdial = Adhearsion::CallController::Dial::Dial.new("SIP/#{to}", {}, ahn_call)
+        # FIXME This doesn't work for repeatedly transferred calls:
         #
-        # update_agent_leg(tdial, qs)
-        tdial.await_completion
-        tdial.cleanup_calls
+        metadata['current_dial'] = tdial
+        execute_dial(tdial, call)
       ensure
         hangup
       end
     end
+  end
+
+
+  def execute_dial(dial, call)
+    dial.run(self)
+    update_second_leg(dial, call)
+    dial.await_completion
+    dial.cleanup_calls
+  end
+
+
+  def update_second_leg(dial, call)
+    tcid = dial.status.calls.first.id
+    Call.set_params_for(tcid, call)
   end
 
 
@@ -66,6 +80,6 @@ class AhnRpc
 
 
   def find_ahn_call
-    Adhearsion.active_calls.values.find { |c| c.id == call_id }
+    Adhearsion.active_calls[call_id]
   end
 end

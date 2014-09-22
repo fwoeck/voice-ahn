@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 4b2f7f7960bd994ca8aea8012327ef3978f8f045
+  revision: a3778ca4b70ead785ddfecfa6438b3cb956d52ae
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -155,12 +155,12 @@ GEM
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
       rspec-mocks (~> 3.1.0)
-    rspec-core (3.1.3)
+    rspec-core (3.1.4)
       rspec-support (~> 3.1.0)
     rspec-expectations (3.1.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.1.0)
-    rspec-mocks (3.1.0)
+    rspec-mocks (3.1.1)
       rspec-support (~> 3.1.0)
     rspec-support (3.1.0)
     rubinius-actor (0.0.2)
