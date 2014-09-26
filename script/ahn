@@ -10,5 +10,5 @@ Thread.abort_on_exception = false # Set to true for debugging
 
 Dir['./lib/*.rb'].each { |f| require f }
 
-AmqpManager.start
+Thread.new { AmqpManager.start }
 Adhearsion::CLI::AhnCommand.start
