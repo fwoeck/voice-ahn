@@ -55,7 +55,13 @@ class AmqpManager
   end
 
 
+  def wait_for_user_ready
+    sleep 1 while !(defined?(User) && User.ready?)
+  end
+
+
   def start
+    wait_for_user_ready
     establish_connection
     ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
 
