@@ -30,7 +30,7 @@ module AgentCollector
         while !User.shutdown? do
           sleep 1
           unlock_idle_agents
-          Adhearsion.logger.info AgentRegistry
+          Adhearsion.logger.debug AgentRegistry
         end
       }
     end
