@@ -42,16 +42,15 @@ module CallScheduler
     end
 
 
-    def wait_for_user_ready
-      sleep 1 while !(defined?(User) && User.ready?)
+    def users_are_ready?
+      defined?(User) && User.respond_to?(:ready?) && User.ready?
     end
 
 
     def start
       return if @@running
       @@running = true
-
-      wait_for_user_ready
+      sleep 1 while !users_are_ready?
 
       Thread.new {
         while !User.shutdown? do
