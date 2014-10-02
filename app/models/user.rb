@@ -10,37 +10,47 @@ class User < Sequel::Model
 
   def availability
     @memo_availability ||= (
-      Redis.current.get(availability_keyname) || availability_default
+      RPool.with { |con|
+        con.get(availability_keyname)
+      } || availability_default
     )
   end
 
 
   def activity
     @memo_activity ||= (
-      Redis.current.get(activity_keyname) || activity_default
+      RPool.with { |con|
+        con.get(activity_keyname)
+      } || activity_default
     )
   end
 
 
   def visibility
     @memo_visibility ||= (
-      Redis.current.sismember(online_users_keyname, id) ? :online : :offline
+      RPool.with { |con|
+        con.sismember(online_users_keyname, id)
+      } ? :online : :offline
     )
   end
 
 
   def skills
-    @memo_skills ||= Redis.current.smembers(skills_keyname).sort
+    @memo_skills ||= RPool.with { |con|
+      con.smembers(skills_keyname)
+    }.sort
   end
 
 
   def languages
-    @memo_languages ||= Redis.current.smembers(languages_keyname).sort
+    @memo_languages ||= RPool.with { |con|
+      con.smembers(languages_keyname)
+    }.sort
   end
 
 
   def build_agent
-    Redis.current.set(activity_keyname, activity_default)
+    RPool.with { |con| con.set(activity_keyname, activity_default) }
 
     AgentRegistry[id] = Agent.new(
       id:           id,
