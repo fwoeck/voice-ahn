@@ -49,16 +49,13 @@ class Agent
 
 
   def persist_visibility_with(vis)
-    if vis == :online
-      Redis.current.sadd(online_users_keyname, id)
-    else
-      Redis.current.srem(online_users_keyname, id)
-    end
+    verb = (vis == :online ? :sadd : :srem)
+    RPool.with { |con| con.send(verb, online_users_keyname, id) }
   end
 
 
   def persist_activity_with(act)
-    Redis.current.set(activity_keyname, act, {ex: 1.week})
+    RPool.with { |con| con.set(activity_keyname, act, {ex: 1.week}) }
     return true
   end
 

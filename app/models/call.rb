@@ -20,7 +20,10 @@ class Call
 
   def save(expires=3.hours, publish=true)
     dump = Marshal.dump(self)
-    Redis.current.set(Call.call_keyname(call_id), dump, {ex: expires})
+
+    RPool.with { |con|
+      con.set(Call.call_keyname(call_id), dump, {ex: expires})
+    }
     publish_update(dump) if publish
   end
 
@@ -133,7 +136,9 @@ class Call
 
 
     def clear_all_redis_calls
-      Redis.current.keys(call_keypattern).each { |key| Redis.current.del(key) }
+      RPool.with { |con|
+        con.keys(call_keypattern)
+      }.each { |key| Redis.current.del(key) }
     rescue Redis::CannotConnectError
       sleep 1
       retry
