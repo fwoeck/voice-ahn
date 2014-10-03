@@ -21,9 +21,6 @@ class DefaultContext < Adhearsion::CallController
     lang = choose_a_language
     Call.set_language_for(call_id, lang)
 
-    sleep 1
-    play "wimdu/#{lang}_how_can_we_help_you"
-
     skill = choose_a_skill(lang)
     Call.set_skill_for(call_id, skill)
 
@@ -45,7 +42,19 @@ class DefaultContext < Adhearsion::CallController
   end
 
 
+  def multiple_langs_available?
+    AhnConfig.language_menu.keys.size > 1
+  end
+
+
+  def multiple_skills_available?
+    AhnConfig.skill_menu.keys.size > 1
+  end
+
+
   def choose_a_language
+    return AhnConfig.language_menu['d'] unless multiple_langs_available?
+
     input = ask 'wimdu/en_choose_a_language', timeout: 5, limit: 1
     digit = (input.utterance || '0').to_i
 
@@ -54,6 +63,19 @@ class DefaultContext < Adhearsion::CallController
 
 
   def choose_a_skill(lang)
+    return AhnConfig.skill_menu['d'] unless multiple_skills_available?
+
+    sleep 1
+    play "wimdu/#{lang}_how_can_we_help_you"
+
+    skill = gather_skill_choice(lang)
+
+    play "wimdu/#{lang}_thank_you"
+    skill
+  end
+
+
+  def gather_skill_choice(lang)
     input = nil
     tries = 0
 
