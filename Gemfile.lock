@@ -40,7 +40,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/punchblock.git
-  revision: 320c1e80a8c6cb67754b80cb413f7736f8cfad96
+  revision: c26a249bbc6ca1a2dd097087bb449646b2e72027
   branch: develop
   specs:
     punchblock (2.5.3)
@@ -381,7 +381,7 @@ GEM
     rubysl-xmlrpc (2.0.0)
     rubysl-yaml (2.0.4)
     rubysl-zlib (2.0.1)
-    sequel (4.14.0)
+    sequel (4.15.0)
     sequella (1.1.0)
       adhearsion (~> 2.1)
       sequel (>= 3.40.0)

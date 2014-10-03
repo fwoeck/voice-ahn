@@ -74,8 +74,8 @@ sox --norm=-3 en_choose_a_skill.aiff -t raw -b 16 -r 32000 it_choose_a_skill.sln
 
 
 # you_will_be_connected
-say --voice=Heather --output-file=en_you_will_be_connected.aiff "Thank you! You will be connected to the next available operator."
-say --voice=Sarah   --output-file=de_you_will_be_connected.aiff "Vielen Dank! Sie werden nun mit dem nächsten freien Mitarbeiter verbunden."
+say --voice=Heather --output-file=en_you_will_be_connected.aiff "You will be connected to the next available operator."
+say --voice=Sarah   --output-file=de_you_will_be_connected.aiff "Sie werden nun mit dem nächsten freien Mitarbeiter verbunden."
 
 sox --norm=-3 en_you_will_be_connected.aiff -t raw -b 16 -r 32000 en_you_will_be_connected.sln32 dither -s
 sox --norm=-3 de_you_will_be_connected.aiff -t raw -b 16 -r 32000 de_you_will_be_connected.sln32 dither -s
