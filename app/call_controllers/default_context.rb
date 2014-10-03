@@ -188,7 +188,7 @@ class DefaultContext < Adhearsion::CallController
     result = record start_beep: true, max_duration: 60_000
     postprocess_recording result.recording_uri
   rescue
-    # Usually qs is being deleted over time.
+    # Usually happens, because qs has been removed.
   end
 
 
