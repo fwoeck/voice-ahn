@@ -16,6 +16,8 @@ class DefaultContext < Adhearsion::CallController
   def run
     answer
     call.on_end { cleanup_leftovers }
+
+    sleep 0.5
     play 'wimdu/en_welcome_to_wimdu'
 
     lang = choose_a_language
@@ -24,6 +26,7 @@ class DefaultContext < Adhearsion::CallController
     skill = choose_a_skill(lang)
     Call.set_skill_for(call_id, skill)
 
+    sleep 0.5
     play "wimdu/#{lang}_you_will_be_connected"
 
     Call.set_queued_at(call_id)
@@ -55,6 +58,7 @@ class DefaultContext < Adhearsion::CallController
   def choose_a_language
     return AhnConfig.language_menu['d'] unless multiple_langs_available?
 
+    sleep 0.5
     input = ask 'wimdu/en_choose_a_language', timeout: 5, limit: 1
     digit = (input.utterance || '0').to_i
 
@@ -65,11 +69,12 @@ class DefaultContext < Adhearsion::CallController
   def choose_a_skill(lang)
     return AhnConfig.skill_menu['d'] unless multiple_skills_available?
 
-    sleep 1
+    sleep 0.5
     play "wimdu/#{lang}_how_can_we_help_you"
 
     skill = gather_skill_choice(lang)
 
+    sleep 0.5
     play "wimdu/#{lang}_thank_you"
     skill
   end
