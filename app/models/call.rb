@@ -138,7 +138,9 @@ class Call
     def clear_all_redis_calls
       RPool.with { |con|
         con.keys(call_keypattern)
-      }.each { |key| Redis.current.del(key) }
+      }.each { |key|
+        RPool.with { |con| con.del(key) }
+      }
     rescue Redis::CannotConnectError
       sleep 1
       retry
