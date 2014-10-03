@@ -4,13 +4,15 @@ gem 'i18n'
 gem 'bunny'
 gem 'redis'
 gem 'sequella'
-gem 'ruby_ami',            github: 'adhearsion/ruby_ami',            branch: 'develop'
-gem 'adhearsion',          github: 'adhearsion/adhearsion',          branch: 'develop'
-gem 'punchblock',          github: 'adhearsion/punchblock',          branch: 'develop'
+gem 'ruby_ami',             github: 'adhearsion/ruby_ami',             branch: 'develop'
+gem 'adhearsion',           github: 'adhearsion/adhearsion',           branch: 'develop'
+gem 'punchblock',           github: 'adhearsion/punchblock',           branch: 'develop'
 gem 'activesupport'
-gem 'adhearsion-asr',      github: 'adhearsion/adhearsion-asr',      branch: 'develop'
+gem 'adhearsion-asr',       github: 'adhearsion/adhearsion-asr',       branch: 'develop'
 gem 'connection_pool'
-gem 'adhearsion-asterisk', github: 'adhearsion/adhearsion-asterisk', branch: 'develop'
+gem 'adhearsion-asterisk',  github: 'adhearsion/adhearsion-asterisk',  branch: 'develop'
+gem 'has-guarded-handlers', github: 'adhearsion/has-guarded-handlers', branch: 'develop'
+
 gem 'celluloid', '0.15.2' # 0.16.0 is not yet supported by ahn
 
 platforms :ruby do

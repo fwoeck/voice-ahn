@@ -39,6 +39,13 @@ GIT
       thor (~> 0.18.0)
 
 GIT
+  remote: git://github.com/adhearsion/has-guarded-handlers.git
+  revision: b15ee22725dec85b1e1405f484e2c9c506988901
+  branch: develop
+  specs:
+    has-guarded-handlers (1.6.0)
+
+GIT
   remote: git://github.com/adhearsion/punchblock.git
   revision: c26a249bbc6ca1a2dd097087bb449646b2e72027
   branch: develop
@@ -117,7 +124,6 @@ GEM
       rubinius-actor
     git-smart (0.1.10)
       colorize
-    has-guarded-handlers (1.6.0)
     hirb (0.7.2)
     i18n (0.6.11)
     ice_nine (0.11.0)
@@ -415,6 +421,7 @@ DEPENDENCIES
   celluloid (= 0.15.2)
   connection_pool
   git-smart
+  has-guarded-handlers!
   hirb
   i18n
   jdbc-mysql
