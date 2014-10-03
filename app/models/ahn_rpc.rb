@@ -8,21 +8,20 @@ class AhnRpc
   end
 
 
-  def call_to_trunk?
-    to.length > 4
+  def sip_domain
+    to.length > 4 ? "@#{AhnConfig['sip_proxy']}" : ''
   end
 
 
   def originate
     _from = "SIP/#{from}"
-    _to   = call_to_trunk? ? "SIP/#{to}@sipconnect.sipgate.de" : "SIP/#{to}"
+    _to   = "SIP/#{to}#{sip_domain}"
 
     Adhearsion::OutboundCall.originate(_from, from: _to) do
       opts = {for: DialTimeout.seconds}
-      opts[:from] = _from unless call_to_trunk?
-
-      cd = Adhearsion::CallController::Dial::Dial.new(_to, opts, call)
+      cd   = Adhearsion::CallController::Dial::Dial.new(_to, opts, call)
       metadata['current_dial'] = cd
+
       dial_outbound(cd, call)
     end
   end
