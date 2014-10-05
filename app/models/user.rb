@@ -1,52 +1,11 @@
 Dir['./app/models/*.rb'].each { |f| require f }
 
-
 class User < Sequel::Model
+  include UserFields
   include Keynames
 
   @@ready    = false
   @@shutdown = false
-
-
-  def availability
-    @memo_availability ||= (
-      RPool.with { |con|
-        con.get(availability_keyname)
-      } || availability_default
-    )
-  end
-
-
-  def activity
-    @memo_activity ||= (
-      RPool.with { |con|
-        con.get(activity_keyname)
-      } || activity_default
-    )
-  end
-
-
-  def visibility
-    @memo_visibility ||= (
-      RPool.with { |con|
-        con.sismember(online_users_keyname, id)
-      } ? :online : :offline
-    )
-  end
-
-
-  def skills
-    @memo_skills ||= RPool.with { |con|
-      con.smembers(skills_keyname)
-    }.sort
-  end
-
-
-  def languages
-    @memo_languages ||= RPool.with { |con|
-      con.smembers(languages_keyname)
-    }.sort
-  end
 
 
   def build_agent
@@ -66,31 +25,34 @@ class User < Sequel::Model
   end
 
 
-  def self.fetch_all_agents
-    all.each { |user| user.build_agent }
-    @@ready = true
-  rescue Redis::CannotConnectError
-    sleep 1
-    retry
-  end
+  class << self
+
+    def fetch_all_agents
+      all.each { |user| user.build_agent }
+      @@ready = true
+    rescue Redis::CannotConnectError
+      sleep 1
+      retry
+    end
 
 
-  def self.shutdown
-    @@shutdown = true
-  end
+    def shutdown
+      @@shutdown = true
+    end
 
 
-  def self.shutdown?
-    @@shutdown
-  end
+    def shutdown?
+      @@shutdown
+    end
 
 
-  def self.ready?
-    @@ready
-  end
+    def ready?
+      @@ready
+    end
 
 
-  def self.all_ids
-    self.select(:id).all.map(&:id)
+    def all_ids
+      self.select(:id).all.map(&:id)
+    end
   end
 end
