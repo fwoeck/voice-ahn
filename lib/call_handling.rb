@@ -76,6 +76,12 @@ module CallHandling
   end
 
 
+  # FIXME This sets the originId & choices on the agent's
+  #       call leg to provide these details to the services
+  #       downstream.
+  #       It depends on cd.status.calls.first, which
+  #       seems brittle.
+  #
   def update_agent_leg(cd, qs)
     tcid = cd.status.calls.first.id
     Call.set_params_for(tcid, qs)

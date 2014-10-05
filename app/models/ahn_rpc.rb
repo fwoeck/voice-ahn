@@ -35,6 +35,12 @@ class AhnRpc
   end
 
 
+  # FIXME This sets the outbound call originId on the agent's
+  #       call leg to provide these details to the services
+  #       downstream.
+  #       It depends on dial.status.calls.first, which
+  #       seems brittle.
+  #
   def update_first_leg(dial, ahn_call)
     oid = dial.status.calls.first.id
     Call.set_params_for ahn_call.id, Call.find(oid).call
@@ -79,6 +85,12 @@ class AhnRpc
   end
 
 
+  # FIXME This sets the current call originId on the 2nd agent's
+  #       call leg to provide these details to the services
+  #       downstream.
+  #       It depends on dial.status.calls.first, which
+  #       seems brittle.
+  #
   def update_second_leg(dial, call)
     tcid = dial.status.calls.first.id
     Call.set_params_for(tcid, call)
