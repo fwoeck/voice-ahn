@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: a3778ca4b70ead785ddfecfa6438b3cb956d52ae
+  revision: 31d534997fc2cb5b27cc380db4833ab70d55f98a
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -66,7 +66,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/ruby_ami.git
-  revision: 9adadce01ba81e30521a6ee1d81ef89ca3d99123
+  revision: b78140ea943da3278561f8899e52bc6b4ea4836c
   branch: develop
   specs:
     ruby_ami (2.2.1)
@@ -116,6 +116,7 @@ GEM
     eventmachine (1.0.3-java)
     executable-hooks (1.3.2)
     ffi (1.9.6)
+    ffi (1.9.6-java)
     ffi2-generators (0.1.1)
     future-resource (1.1.0)
     girl_friday (0.11.2)
@@ -160,7 +161,7 @@ GEM
       rspec-core (~> 3.1.0)
       rspec-expectations (~> 3.1.0)
       rspec-mocks (~> 3.1.0)
-    rspec-core (3.1.6)
+    rspec-core (3.1.7)
       rspec-support (~> 3.1.0)
     rspec-expectations (3.1.2)
       diff-lcs (>= 1.2.0, < 2.0)
