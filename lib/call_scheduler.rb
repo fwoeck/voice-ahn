@@ -29,16 +29,23 @@ module CallScheduler
 
     def schedule_calls_to_agents
       waiting_calls.each { |call|
-        agent_id = Agent.where(languages: call.language, skills: call.skill).sort_by_idle_time.first
-        agent    = Agent.checkout(agent_id, call)
-
-        if agent
-          call.dispatched = true
-          call.queue.push(agent)
-          Adhearsion.logger.info "Schedule agent ##{agent_id} for #{call.call_id}"
-          sleep 0.05
+        if agent = Agent.checkout(agent_id_for(call), call)
+          dispatch(call, agent)
         end
       }
+    end
+
+
+    def dispatch(call, agent)
+      call.dispatched = true
+      call.queue.push(agent)
+      Adhearsion.logger.info "Schedule agent ##{agent.id} for #{call.call_id}"
+      sleep 0.05
+    end
+
+
+    def agent_id_for(call)
+      Agent.where(languages: call.language, skills: call.skill).sort_by_idle_time.first
     end
 
 
