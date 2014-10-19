@@ -41,16 +41,20 @@ class Agent
 
     def update_state_for(event)
       agent = find_for(event)
-      hdr   = event.headers
-      chan  = hdr['ChannelState']
+      chan  = event.headers['ChannelState']
 
-      act = case chan
-              when '5' then :ringing
-              when '6' then :talking
-              else :silent
-            end
+      update_activity_for(
+        agent, activity_name(chan), event.target_call_id
+      )
+    end
 
-      update_activity_for(agent, act, event.target_call_id)
+
+    def activity_name(chan)
+      case chan
+        when '5' then :ringing
+        when '6' then :talking
+        else :silent
+      end
     end
 
 
