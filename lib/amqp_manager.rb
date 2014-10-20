@@ -25,10 +25,15 @@ class AmqpManager
   }
 
 
-  def publish(data, to_custom, to_numbers)
-    rails_xchange.publish(data, routing_key: 'voice.rails')
-    custom_xchange.publish(data, routing_key: 'voice.custom') if to_custom
-    numbers_xchange.publish(data, routing_key: 'voice.numbers') if to_numbers
+  def publish(data, incl_custom, incl_numbers)
+    publish_to(:rails,   data)
+    publish_to(:custom,  data) if incl_custom
+    publish_to(:numbers, data) if incl_numbers
+  end
+
+
+  def publish_to(target, data)
+    self.send("#{target}_xchange").publish(data, routing_key: "voice.#{target}")
   end
 
 
