@@ -37,29 +37,8 @@ Adhearsion::Events.draw do
   end
 
 
-  # See adhearsion-xmpp for agent availability-states
-  # Has no Rayo-pendant:
-  #
-  # ami name: 'PeerStatus' do |event|
-  # end
-
-  # ! This emits Rayo-Events
+  # Subscribe to Rayo-Events, e.g.:
   #
   # punchblock(Punchblock::Event::End) do |event|
-  # end
-
-  # ami name: 'Bridge' do |event|
-  # end
-
-  # ami name: 'NewCallerid' do |event|
-  # end
-
-  # ami name: 'OriginateResponse' do |event|
-  # end
-
-  # ami name: 'Newchannel' do |event|
-  # end
-
-  # ami name: 'SoftHangupRequest' do |event|
   # end
 end
