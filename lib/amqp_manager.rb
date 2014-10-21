@@ -1,3 +1,7 @@
+LogObject   = Struct.new(:time, :data, :custom, :numbers)
+MESSAGE_LOG = ThreadSafe::Array.new
+
+
 class AmqpManager
   include Celluloid
 
@@ -29,6 +33,14 @@ class AmqpManager
     publish_to(:rails,   data)
     publish_to(:custom,  data) if incl_custom
     publish_to(:numbers, data) if incl_numbers
+
+    capture_message(data, incl_custom, incl_numbers)
+  end
+
+
+  def capture_message(data, incl_custom, incl_numbers)
+    return unless ENV['CAPTURE']
+    MESSAGE_LOG << LogObject.new(Time.now.utc, data, incl_custom, incl_numbers)
   end
 
 
@@ -96,6 +108,13 @@ class AmqpManager
 
     def publish(*args)
       Celluloid::Actor[:amqp].async.publish(*args)
+    end
+
+
+    def dump_log(file=nil)
+      filename = './log/' + (file || "capture-#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}") + '.yml'
+      File.open(filename, 'wb') { |f| f.write MESSAGE_LOG.to_yaml }
+      MESSAGE_LOG.clear
     end
   end
 end

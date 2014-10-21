@@ -2,6 +2,7 @@
 .*.swo
 .DS_STORE
 /log/*.log
+/log/*.yml
 /tmp
 /.ruby-version
 /.bundle/config
