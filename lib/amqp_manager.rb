@@ -111,9 +111,13 @@ class AmqpManager
     end
 
 
+    def dump_filename(file)
+      './log/' + (file || "capture-#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}") + '.yml'
+    end
+
+
     def dump_log(file=nil)
-      filename = './log/' + (file || "capture-#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}") + '.yml'
-      File.open(filename, 'wb') { |f| f.write MESSAGE_LOG.to_yaml }
+      File.open(dump_filename(file), 'wb') { |f| f.write MESSAGE_LOG.to_yaml }
       MESSAGE_LOG.clear
     end
   end
