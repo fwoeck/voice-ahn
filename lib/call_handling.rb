@@ -40,7 +40,7 @@ module CallHandling
 
     Timeout::timeout(timeout) {
       stop_moh
-      qs.moh = play! 'wimdu/songbirds'
+      qs.moh = play! 'wimdu/voice-moh'
       qs.agent = qs.queue.pop
     }
   end
