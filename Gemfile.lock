@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 31d534997fc2cb5b27cc380db4833ab70d55f98a
+  revision: 5bbafb0be315b03384d802408b9c87aaea2dc51a
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -94,7 +94,7 @@ GEM
       niceogiri (~> 1.0)
       nokogiri (~> 1.5, >= 1.5.6)
     bundler-unload (1.0.2)
-    bunny (1.5.0)
+    bunny (1.5.1)
       amq-protocol (>= 1.9.2)
     celluloid (0.15.2)
       timers (~> 1.1.0)
@@ -127,7 +127,7 @@ GEM
     hirb (0.7.2)
     i18n (0.6.11)
     ice_nine (0.11.0)
-    jdbc-mysql (5.1.31)
+    jdbc-mysql (5.1.33)
     json (1.8.1)
     json (1.8.1-java)
     little-plugger (1.1.3)
