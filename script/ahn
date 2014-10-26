@@ -3,6 +3,11 @@
 STDOUT.sync = true
 STDERR.sync = true
 
+# See https://github.com/celluloid/timers/issues/20
+#     method 'old_init' not defined in SortedSet:
+require 'set'
+SortedSet.new
+
 require File.expand_path('../../config/environment',  __FILE__)
 require 'adhearsion/cli_commands'
 
