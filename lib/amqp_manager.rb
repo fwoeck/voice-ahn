@@ -91,7 +91,6 @@ class AmqpManager
   class << self
 
     def start
-      Celluloid.task_class = Celluloid::TaskThread
       Celluloid::Actor[:amqp] = AmqpManager.pool(size: 32)
       @@manager ||= new.tap { |m| m.start }
     end
