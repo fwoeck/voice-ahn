@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 5bbafb0be315b03384d802408b9c87aaea2dc51a
+  revision: 21ee933026c50198a6568611702cb1b5be671729
   branch: develop
   specs:
     adhearsion (2.5.4)
@@ -33,7 +33,7 @@ GIT
       has-guarded-handlers (~> 1.6)
       logging (~> 1.8)
       pry
-      punchblock (~> 2.4)
+      punchblock (~> 2.5, >= 2.5.3)
       rake
       ruby_speech (~> 2.0)
       thor (~> 0.18.0)
