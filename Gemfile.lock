@@ -215,7 +215,7 @@ DEPENDENCIES
   adhearsion-asr!
   adhearsion-asterisk!
   bunny
-  celluloid (= 0.15.2)
+  celluloid
   connection_pool
   git-smart
   has-guarded-handlers!

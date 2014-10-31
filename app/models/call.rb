@@ -9,7 +9,7 @@ class Call
 
 
   Queues = ThreadSafe::Hash.new
-  FORMAT = %w{call_id call_tag origin_id language skill extension caller_id hungup called_at mailbox queued_at hungup_at dispatched_at}
+  FORMAT = %w{call_id call_tag origin_id language skill extension caller_id called_at mailbox queued_at hungup_at dispatched_at}
            .map(&:to_sym)
 
   attr_accessor *FORMAT
