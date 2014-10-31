@@ -11,7 +11,6 @@ module CallUpdates
 
 
   def destroy
-    self.hungup    = true
     self.hungup_at = Time.now.utc
     save(1.minute)
   end

@@ -49,7 +49,7 @@ class CallActor
 
 
   def update_state(hdr)
-    if call && !call.hungup
+    if call && !call.hungup_at
       call.update_state_for(hdr)
     end
   end
