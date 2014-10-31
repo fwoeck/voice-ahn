@@ -13,7 +13,7 @@ gem 'connection_pool'
 gem 'adhearsion-asterisk',  github: 'adhearsion/adhearsion-asterisk',  branch: 'develop'
 gem 'has-guarded-handlers', github: 'adhearsion/has-guarded-handlers', branch: 'develop'
 
-gem 'celluloid', '0.15.2' # 0.16.0 not yet supported by Ahn?
+gem 'celluloid'
 
 platforms :ruby do
   gem 'mysql2'
