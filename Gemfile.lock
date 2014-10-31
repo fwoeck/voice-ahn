@@ -66,7 +66,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/ruby_ami.git
-  revision: b78140ea943da3278561f8899e52bc6b4ea4836c
+  revision: 1e52451fa94607adba1e9ddb3f7056a894d4f8ea
   branch: develop
   specs:
     ruby_ami (2.2.1)
@@ -75,7 +75,7 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
-    activesupport (4.1.6)
+    activesupport (4.1.7)
       i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
