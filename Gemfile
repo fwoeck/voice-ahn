@@ -1,7 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'i18n'
-gem 'bunny'
+gem 'bunny', '1.5.1'        # FIXME 1.6.0 hangs with jruby
 gem 'redis'
 gem 'sequella'
 gem 'ruby_ami',             github: 'adhearsion/ruby_ami',             branch: 'develop'
