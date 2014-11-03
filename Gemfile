@@ -1,7 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'i18n'
-gem 'bunny'
+gem 'bunny', '1.5.1'        # FIXME 1.6.0 hangs with jruby
 gem 'redis'
 gem 'sequella'
 gem 'ruby_ami',             github: 'adhearsion/ruby_ami',             branch: 'develop'
@@ -23,10 +23,6 @@ platforms :jruby do
   gem 'jdbc-mysql'
 end
 
-group :development, :test do
+group :test do
   gem 'rspec'
-  gem 'hirb',             require: false
-  gem 'wirble',           require: false
-  gem 'git-smart',        require: false
-  gem 'rubygems-bundler', require: false
 end
