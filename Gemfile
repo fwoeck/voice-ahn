@@ -23,10 +23,6 @@ platforms :jruby do
   gem 'jdbc-mysql'
 end
 
-group :development, :test do
+group :test do
   gem 'rspec'
-  gem 'hirb',             require: false
-  gem 'wirble',           require: false
-  gem 'git-smart',        require: false
-  gem 'rubygems-bundler', require: false
 end
