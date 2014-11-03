@@ -184,7 +184,7 @@ GEM
     rubygems-bundler (1.4.4)
       bundler-unload (>= 1.0.2)
       executable-hooks (>= 1.3.2)
-    sequel (4.15.0)
+    sequel (4.16.0)
     sequella (1.1.0)
       adhearsion (~> 2.1)
       sequel (>= 3.40.0)
