@@ -2,9 +2,7 @@ Adhearsion::Events.draw do
 
   shutdown do |event|
     Adhearsion.active_calls.values.each { |call| call.hangup }
-
     AmqpManager.shutdown
-    Celluloid.shutdown
     User.shutdown
   end
 
