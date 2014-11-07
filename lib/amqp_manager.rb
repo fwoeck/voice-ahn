@@ -63,21 +63,12 @@ class AmqpManager
 
   def establish_connection
     sleep 1 while !users_are_ready?
-
-    if USE_JRB
-      establish_marchhare_connection
-    else
-      establish_bunny_connection
-    end
+    USE_JRB ? establish_marchhare_connection : establish_bunny_connection
   end
 
 
   def establish_bunny_connection
-    @@connection = Bunny.new(
-      host:     AhnConfig.rabbit_host,
-      user:     AhnConfig.rabbit_user,
-      password: AhnConfig.rabbit_pass
-    ).tap { |c| c.start }
+    @@connection = Bunny.new(amqp_config).tap { |c| c.start }
   rescue Bunny::TCPConnectionFailed
     sleep 1
     retry
@@ -85,14 +76,18 @@ class AmqpManager
 
 
   def establish_marchhare_connection
-    @@connection = MarchHare.connect(
-      host:     AhnConfig.rabbit_host,
-      user:     AhnConfig.rabbit_user,
-      password: AhnConfig.rabbit_pass
-    )
+    @@connection = MarchHare.connect(amqp_config)
   rescue MarchHare::ConnectionRefused
     sleep 1
     retry
+  end
+
+
+  def amqp_config
+    { host:     AhnConfig.rabbit_host,
+      user:     AhnConfig.rabbit_user,
+      password: AhnConfig.rabbit_pass
+    }
   end
 
 
