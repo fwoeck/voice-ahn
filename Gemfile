@@ -1,7 +1,6 @@
 source 'http://rubygems.org'
 
 gem 'i18n'
-gem 'bunny', '1.5.1'        # FIXME 1.6.0 hangs with jruby
 gem 'redis'
 gem 'sequella'
 gem 'ruby_ami',             github: 'adhearsion/ruby_ami',             branch: 'develop'
@@ -16,10 +15,12 @@ gem 'has-guarded-handlers', github: 'adhearsion/has-guarded-handlers', branch: '
 gem 'celluloid'
 
 platforms :ruby do
+  gem 'bunny'
   gem 'mysql2'
 end
 
 platforms :jruby do
+  gem 'march_hare'
   gem 'jdbc-mysql'
 end
 

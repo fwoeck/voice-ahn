@@ -5,7 +5,8 @@ MESSAGE_LOG = ThreadSafe::Array.new
 class AmqpManager
   include Celluloid
 
-  TOPICS = [:rails, :numbers, :custom, :ahn]
+  USE_JRB = RUBY_PLATFORM =~ /java/
+  TOPICS  = [:rails, :numbers, :custom, :ahn]
 
 
   TOPICS.each { |name|
@@ -61,6 +62,17 @@ class AmqpManager
 
 
   def establish_connection
+    sleep 1 while !users_are_ready?
+
+    if USE_JRB
+      establish_marchhare_connection
+    else
+      establish_bunny_connection
+    end
+  end
+
+
+  def establish_bunny_connection
     @@connection = Bunny.new(
       host:     AhnConfig.rabbit_host,
       user:     AhnConfig.rabbit_user,
@@ -72,19 +84,30 @@ class AmqpManager
   end
 
 
+  def establish_marchhare_connection
+    @@connection = MarchHare.connect(
+      host:     AhnConfig.rabbit_host,
+      user:     AhnConfig.rabbit_user,
+      password: AhnConfig.rabbit_pass
+    )
+  rescue MarchHare::ConnectionRefused
+    sleep 1
+    retry
+  end
+
+
   def users_are_ready?
     defined?(User) && User.respond_to?(:ready?) && User.ready?
   end
 
 
   def start
-    sleep 1 while !users_are_ready?
     establish_connection
     ahn_queue.bind(ahn_xchange, routing_key: 'voice.ahn')
 
-    ahn_queue.subscribe { |delivery_info, metadata, payload|
-      Marshal.load(payload).handle_message
-    }
+    ahn_queue.subscribe(blocking: false) do |*args|
+      Marshal.load(USE_JRB ? args[0] : args[2]).handle_message
+    end
   end
 
 
