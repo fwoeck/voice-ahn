@@ -93,7 +93,7 @@ GEM
       girl_friday
       niceogiri (~> 1.0)
       nokogiri (~> 1.5, >= 1.5.6)
-    bunny (1.6.2)
+    bunny (1.6.3)
       amq-protocol (>= 1.9.2)
     celluloid (0.15.2)
       timers (~> 1.1.0)
