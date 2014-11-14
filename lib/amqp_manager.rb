@@ -109,6 +109,7 @@ class AmqpManager
   class << self
 
     def start
+      Celluloid.logger.level = 3
       Celluloid::Actor[:amqp] = AmqpManager.pool(size: 32)
       @@manager ||= new.tap { |m| m.start }
     end
