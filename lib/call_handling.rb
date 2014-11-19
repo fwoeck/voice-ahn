@@ -1,5 +1,10 @@
 module CallHandling
 
+  def automated_test_call?
+    call.to == '000'
+  end
+
+
   def queue_and_handle_call(lang, skill)
     @qs = get_queue_struct_for(lang, skill)
 

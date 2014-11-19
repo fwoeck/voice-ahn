@@ -1,7 +1,9 @@
 module MenuLanguage
 
   def choose_a_language
-    return AhnConfig.language_menu['d'] unless multiple_langs_available?
+    if !multiple_langs_available? || automated_test_call?
+      return AhnConfig.language_menu['d']
+    end
 
     sleep 0.5
     input = ask 'wimdu/en_choose_a_language', timeout: 5, limit: 1
