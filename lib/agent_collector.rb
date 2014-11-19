@@ -26,13 +26,16 @@ module AgentCollector
       @@running = true
       sleep 1 while !users_are_ready?
 
-      Thread.new {
-        while !User.shutdown? do
-          sleep 1
-          unlock_idle_agents
-          Adhearsion.logger.debug AgentRegistry
-        end
-      }
+      Thread.new { collect_agents }
+    end
+
+
+    def collect_agents
+      while !User.shutdown? do
+        sleep 1
+        unlock_idle_agents
+        Adhearsion.logger.debug AgentRegistry
+      end
     end
   end
 end
