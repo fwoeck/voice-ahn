@@ -7,9 +7,10 @@ module PostProcessing
 
 
   def timeout_call
-    qs.status = :timeout
-    Call.set_dispatched_at(call_id)
     stop_moh
+    qs.dispatched = true
+    qs.status     = :timeout
+    Call.set_dispatched_at(call_id)
   end
 
 

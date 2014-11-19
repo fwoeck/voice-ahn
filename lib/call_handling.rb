@@ -13,6 +13,8 @@ module CallHandling
       qs.agent      = nil
       dial_to_next_agent
     end
+  rescue NoMethodError
+    # Happens, if a call is hung up.
   end
 
 
@@ -33,7 +35,8 @@ module CallHandling
   def dial_to_next_agent
     wait_for_next_agent
     qs.status = dial_to(qs, for: AhnConfig.ring_timeout.seconds)
-  rescue TimeoutError, NoMethodError
+  rescue TimeoutError
+    Adhearsion.logger.info "Call #{call_id} queue timed out."
     timeout_call
     record_voice_memo
   end
