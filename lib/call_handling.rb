@@ -1,5 +1,10 @@
 module CallHandling
 
+  def automated_test_call?
+    call.to == '000'
+  end
+
+
   def queue_and_handle_call(lang, skill)
     @qs = get_queue_struct_for(lang, skill)
 
@@ -8,6 +13,8 @@ module CallHandling
       qs.agent      = nil
       dial_to_next_agent
     end
+  rescue NoMethodError
+    # Happens, if a call is hung up.
   end
 
 
@@ -27,18 +34,19 @@ module CallHandling
 
   def dial_to_next_agent
     wait_for_next_agent
-    qs.status = dial_to(qs, for: DialTimeout.seconds)
-  rescue TimeoutError, NoMethodError
+    qs.status = dial_to(qs, for: AhnConfig.ring_timeout.seconds)
+  rescue TimeoutError
+    Adhearsion.logger.info "Call #{call_id} queue timed out."
+    timeout_call
     record_voice_memo
   end
 
 
   def wait_for_next_agent
-    raise TimeoutError if qs.tries > 2
+    raise TimeoutError if qs.tries >= AhnConfig.dispatch_att
     qs.tries += 1
-    timeout   = 2 * DialTimeout
 
-    Timeout::timeout(timeout) {
+    Timeout::timeout(AhnConfig.call_timeout) {
       stop_moh
       qs.moh = play! 'wimdu/voice-moh'
       qs.agent = qs.queue.pop

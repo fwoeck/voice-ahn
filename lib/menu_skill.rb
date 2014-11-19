@@ -1,7 +1,9 @@
 module MenuSkill
 
   def choose_a_skill(lang)
-    return AhnConfig.skill_menu['d'] unless multiple_skills_available?
+    if !multiple_skills_available? || automated_test_call?
+      return AhnConfig.skill_menu['d']
+    end
 
     sleep 0.5
     play "wimdu/#{lang}_how_can_we_help_you"

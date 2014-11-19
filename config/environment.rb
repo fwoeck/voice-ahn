@@ -13,7 +13,6 @@ require 'active_support/all'
 Time.zone = 'Etc/UTC'
 I18n.enforce_available_locales = false
 
-DialTimeout = 15
 AhnConfig   = YAML.load_file('./config/app.yml')
 AhnConfig.keys.each { |key|
   AhnConfig.instance_eval "class << self; define_method(:#{key}) {self['#{key}']}; end"
