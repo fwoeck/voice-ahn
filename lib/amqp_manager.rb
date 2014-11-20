@@ -121,6 +121,11 @@ class AmqpManager
     end
 
 
+    def dial_event(data)
+      Celluloid::Actor[:amqp].async.publish_to(:rails, data)
+    end
+
+
     def publish(*args)
       Celluloid::Actor[:amqp].async.publish(*args)
     end

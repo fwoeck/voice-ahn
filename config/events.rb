@@ -1,3 +1,6 @@
+DialEvent = Struct.new(:call_id, :from, :to, :reason)
+
+
 Adhearsion::Events.draw do
 
   after_initialized do |event|
@@ -16,7 +19,7 @@ Adhearsion::Events.draw do
   end
 
 
-  # TODO Migrate this to Punchblock::Event
+  # TODO Migrate this to punchblock events
   #
   ami name: 'BridgeExec' do |event|
     if event.headers['Response'] == 'Success'
@@ -25,7 +28,7 @@ Adhearsion::Events.draw do
   end
 
 
-  # TODO Migrate this to Punchblock::Event
+  # TODO Migrate this to punchblock events
   #
   ami name: 'Newstate' do |event|
     if ['0', '5', '6'].include?(event.headers['ChannelState'])
@@ -40,7 +43,10 @@ Adhearsion::Events.draw do
       Call.set_close_state_for(event)
       Agent.finish_activity_for(call)
 
-      puts ">>> #{event.reason} from: #{call.from}, to: #{call.to}"
+      if event.reason == :error
+        evt = DialEvent.new(call.id, call.from, call.to, event.reason)
+        AmqpManager.dial_event(Marshal.dump evt)
+      end
     end
   end
 end
