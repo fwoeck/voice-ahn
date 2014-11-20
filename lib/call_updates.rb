@@ -50,7 +50,7 @@ module CallUpdates
     return if self.extension
 
     chan = hdr['Channel1'] || hdr['Channel'] || ""
-    ext  = chan[ChannelRegex, 1] || '0'
+    ext  = chan[AgentRegex, 1] || '0'
     ext  = '0' if ext == AhnConfig.admin_name
 
     self.extension = ext

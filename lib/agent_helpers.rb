@@ -1,7 +1,7 @@
 module AgentHelpers
 
   def extract_from(call)
-    get_by_name(call.to[ChannelRegex, 1] || call.from[ChannelRegex, 1])
+    get_by_name(call.to[AgentRegex, 1] || call.from[AgentRegex, 1])
   end
 
 
@@ -12,7 +12,7 @@ module AgentHelpers
 
   def get_peer_from(event)
     peer = event.headers['Peer'] || event.headers['Channel']
-    peer[ChannelRegex, 1] if peer
+    peer[AgentRegex, 1] if peer
   end
 
 

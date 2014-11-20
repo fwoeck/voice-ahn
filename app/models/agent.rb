@@ -5,7 +5,7 @@ require './lib/agent_rpc'
 require './lib/keynames'
 
 AgentRegistry = ThreadSafe::Hash.new
-ChannelRegex  = /SIP\/(\d\d\d\d?)/
+AgentRegex    = /SIP\/(\d\d\d)(\D|$)/
 IdleTimeout   = 3
 
 
