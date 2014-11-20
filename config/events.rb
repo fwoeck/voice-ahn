@@ -43,7 +43,7 @@ Adhearsion::Events.draw do
       Call.set_close_state_for(event)
       Agent.finish_activity_for(call)
 
-      if event.reason == :error
+      if [:error, :busy].include?(event.reason)
         evt = DialEvent.new(call.id, call.from, call.to, event.reason)
         AmqpManager.dial_event(Marshal.dump evt)
       end

@@ -18,7 +18,7 @@ class AhnRpc
     _to   = "SIP/#{to}#{sip_domain}"
 
     Adhearsion::OutboundCall.originate(_from, from: _to) do
-      opts = {for: AhnConfig.ring_timeout.seconds, from: _to}
+      opts = {for: AhnConfig.ring_timeout.seconds, from: _from}
       cd   = Adhearsion::CallController::Dial::Dial.new(_to, opts, call)
       metadata['current_dial'] = cd
 
