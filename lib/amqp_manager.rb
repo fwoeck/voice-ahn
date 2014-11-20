@@ -46,6 +46,7 @@ class AmqpManager
 
 
   def publish_to(target, data)
+    return if User.shutdown?
     self.send("#{target}_xchange").publish(data, routing_key: "voice.#{target}")
   end
 

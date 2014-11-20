@@ -1,18 +1,18 @@
 Adhearsion::Events.draw do
 
-  shutdown do |event|
-    Adhearsion.active_calls.values.each { |call| call.hangup }
-    AmqpManager.shutdown
-    User.shutdown
-  end
-
-
   after_initialized do |event|
     User.fetch_all_agents
     Call.clear_all_redis_calls
 
     Thread.new { AgentCollector.start }
     Thread.new { CallScheduler.start }
+  end
+
+
+  stop_requested do |event|
+    User.shutdown
+    Adhearsion.active_calls.values.each { |call| call.hangup }
+    AmqpManager.shutdown
   end
 
 
