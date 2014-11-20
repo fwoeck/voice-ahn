@@ -25,13 +25,17 @@ module CallUpdates
 
 
   def detect_callers_for(hdr)
-    return if self.caller_id
+    return unless caller_id.blank?
 
+    self.caller_id = extract_caller_id_from(hdr)
+    self.called_at = Time.now.utc
+  end
+
+
+  def extract_caller_id_from(hdr)
     num = hdr['CallerIDNum']
     num = nil if (num.blank? || num == 'Anonymous')
-
-    self.caller_id = (num || hdr['CallerIDName']).sub('SIP/', '').sub(/@.+$/, '')
-    self.called_at = Time.now.utc
+    (num || hdr['CallerIDName'] || '').sub('SIP/', '').sub(/@.+$/, '')
   end
 
 
