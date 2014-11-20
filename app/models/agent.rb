@@ -5,7 +5,7 @@ require './lib/agent_rpc'
 require './lib/keynames'
 
 AgentRegistry = ThreadSafe::Hash.new
-ChannelRegex  = /^SIP\/(\d\d\d\d?)/
+ChannelRegex  = /SIP\/(\d\d\d\d?)/
 IdleTimeout   = 3
 
 
@@ -40,7 +40,7 @@ class Agent
   class << self
 
     def update_state_for(event)
-      agent = find_for(event)
+      agent = get_by_name(get_peer_from event)
       chan  = event.headers['ChannelState']
 
       update_activity_for(
@@ -64,20 +64,14 @@ class Agent
     end
 
 
-    def close_state_for(event)
-      agent = find_for(event)
-      update_activity_for(agent, :silent, event.target_call_id)
+    def finish_activity_for(call)
+      agent = extract_from(call)
+      update_activity_for(agent, :silent, call.id)
     end
 
 
     def all_ids
       AgentRegistry.keys
-    end
-
-
-    def find_for(event)
-      peer = get_peer_from(event)
-      (AgentRegistry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
     end
 
 

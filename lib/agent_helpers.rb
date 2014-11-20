@@ -1,5 +1,15 @@
 module AgentHelpers
 
+  def extract_from(call)
+    get_by_name(call.to[ChannelRegex, 1] || call.from[ChannelRegex, 1])
+  end
+
+
+  def get_by_name(peer)
+    (AgentRegistry.detect { |k, v| v.name == peer } || [nil, nil])[1] if peer
+  end
+
+
   def get_peer_from(event)
     peer = event.headers['Peer'] || event.headers['Channel']
     peer[ChannelRegex, 1] if peer

@@ -59,7 +59,7 @@ class Call
     end
 
 
-    def close_state_for(event)
+    def set_close_state_for(event)
       return unless (tcid = event.target_call_id)
       find(tcid).async.close_state
     end
