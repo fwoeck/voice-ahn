@@ -18,6 +18,11 @@ class CallActor
   end
 
 
+  def set_caller_id(cid)
+    call.tap { |c| c.caller_id = cid }.save if call
+  end
+
+
   def set_language(lang)
     call.tap { |c| c.language = lang }.save if call
   end

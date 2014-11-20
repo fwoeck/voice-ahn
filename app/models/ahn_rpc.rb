@@ -29,21 +29,18 @@ class AhnRpc
 
   def dial_outbound(dial, ahn_call)
     dial.run(self)
-    update_first_leg(dial, ahn_call)
+    update_call_pair(dial, ahn_call)
     dial.await_completion
     dial.cleanup_calls
   end
 
 
-  # FIXME This sets the outbound call originId on the agent's
-  #       call leg to provide these details to the services
-  #       downstream.
-  #       It depends on dial.status.calls.first, which
-  #       seems brittle.
-  #
-  def update_first_leg(dial, ahn_call)
-    oid = dial.status.calls.first.id
-    Call.set_params_for ahn_call.id, Call.find(oid).call
+  def update_call_pair(dial, ahn_call)
+    oid  = dial.status.calls.first.id
+    call = Call.find(oid).call
+
+    Call.set_params_for(ahn_call.id, call)
+    Call.set_caller_id_for(oid, ahn_call.from)
   end
 
 
@@ -79,19 +76,13 @@ class AhnRpc
 
   def execute_dial(dial, call)
     dial.run(self)
-    update_second_leg(dial, call)
+    update_new_leg(dial, call)
     dial.await_completion
     dial.cleanup_calls
   end
 
 
-  # FIXME This sets the current call originId on the 2nd agent's
-  #       call leg to provide these details to the services
-  #       downstream.
-  #       It depends on dial.status.calls.first, which
-  #       seems brittle.
-  #
-  def update_second_leg(dial, call)
+  def update_new_leg(dial, call)
     tcid = dial.status.calls.first.id
     Call.set_params_for(tcid, call)
   end

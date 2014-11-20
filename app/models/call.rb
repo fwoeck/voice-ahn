@@ -29,8 +29,13 @@ class Call
     end
 
 
-    def set_params_for(tcid, qs)
-      find(tcid).async.set_params(qs)
+    def set_params_for(tcid, params)
+      find(tcid).async.set_params(params)
+    end
+
+
+    def set_caller_id_for(tcid, cid)
+      find(tcid).async.set_caller_id(cid)
     end
 
 
