@@ -36,11 +36,11 @@ class AhnRpc
 
 
   def update_call_pair(dial, ahn_call)
-    oid  = dial.status.calls.first.id
-    call = Call.find(oid).call
+    oid = dial.status.calls.first.id
+    act = Call.find(oid)
 
-    Call.set_params_for(ahn_call.id, call)
-    Call.set_caller_id_for(oid, ahn_call.from)
+    Call.set_params_for(ahn_call.id, act.call)
+    Call.set_caller_id_for(act, ahn_call.from)
   end
 
 
