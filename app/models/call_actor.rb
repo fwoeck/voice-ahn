@@ -18,8 +18,12 @@ class CallActor
   end
 
 
-  def set_caller_id(cid)
-    call.tap { |c| c.caller_id = cid }.save if call
+  def set_call_stats(cid)
+    call.tap { |c|
+      c.caller_id     = cid
+      c.called_at     = Time.now.utc
+      c.dispatched_at = Time.now.utc
+    }.save if call
   end
 
 
