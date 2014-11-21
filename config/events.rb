@@ -1,4 +1,5 @@
-DialEvent = Struct.new(:call_id, :from, :to, :reason)
+DialEvent    = Struct.new(:call_id, :from, :to, :reason)
+EventReasons = [:error, :busy, :reject]
 
 
 Adhearsion::Events.draw do
@@ -43,7 +44,7 @@ Adhearsion::Events.draw do
       Call.set_close_state_for(event)
       Agent.finish_activity_for(call)
 
-      if [:error, :busy].include?(event.reason)
+      if EventReasons.include?(event.reason)
         evt = DialEvent.new(call.id, call.from, call.to, event.reason)
         AmqpManager.dial_event(Marshal.dump evt)
       end

@@ -40,7 +40,7 @@ class AhnRpc
     act = Call.find(oid)
 
     Call.set_params_for(ahn_call.id, act.call)
-    Call.set_caller_id_for(act, ahn_call.from)
+    Call.set_call_stats_for(act, ahn_call.from)
   end
 
 

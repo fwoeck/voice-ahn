@@ -34,9 +34,9 @@ class Call
     end
 
 
-    def set_caller_id_for(call, _cid)
+    def set_call_stats_for(call, _cid)
       cid = _cid[/\d+/] || _cid
-      call.async.set_caller_id(cid)
+      call.async.set_call_stats(cid)
     end
 
 
