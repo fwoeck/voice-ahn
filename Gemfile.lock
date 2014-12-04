@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/adhearsion/adhearsion-asr.git
-  revision: 0f3ea0f0ce1c1b33e63052ee4558bc85e45e22ce
+  revision: a1f3a578f440b8aef995f482c6812ffec1346d14
   branch: develop
   specs:
     adhearsion-asr (1.2.0)
