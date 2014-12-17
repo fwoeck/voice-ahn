@@ -18,7 +18,7 @@ GIT
 
 GIT
   remote: git://github.com/adhearsion/adhearsion.git
-  revision: 999001751d069cc6dafe54a22b379a7c886267bc
+  revision: d22b53112c2086f01ec454aba33693b1bae1f9c8
   branch: develop
   specs:
     adhearsion (2.5.4)
